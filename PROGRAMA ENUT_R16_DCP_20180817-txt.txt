@@ -1,0 +1,331 @@
+libname ENUT '\\DIEGO_CAMPOS\Users\Dcamposp\Documents\INE\ENUT_Encuesta Nacional Uso del Tiempo\Recibido de Ivan Touron_20180710\Base Enut SAS';
+
+/*ANALISIS REGION 16*/
+
+/*
+
+*Importar id_hogar;
+ 
+*Proc Import sas NUEVO;
+PROC IMPORT OUT= enut.insumo_id_hogar
+            DATAFILE= '\\DIEGO_CAMPOS\Users\Dcamposp\Documents\INE\ENUT_Encuesta Nacional Uso del Tiempo\Recibido de Karlla Muñoz_20180710\180711_base_dfc_etiquetada_id_hogar\first_enut_idhogar.sav'
+            DBMS=spss REPLACE;
+		/*	sheet=insumo_id_hogar;*/
+RUN;
+
+/*
+*Generar Merge con la base original recod y cruzar con insumo_id_hogar;
+data base_usuario_recod_r16;  
+set enut.base_usuario_corregida_recod;            
+run;
+
+proc sort data=base_usuario_recod_r16;
+by id_hogar;
+
+proc sort data=enut.insumo_id_hogar;
+by id_hogar;
+
+data cruce_r16;
+merge base_usuario_recod_r16(in=a) enut.insumo_id_hogar(in=b);
+by id_hogar;
+if a=1;
+run;
+
+data cruce_r16;  
+set cruce_r16; 
+region16=region; 
+if Enc_comuna_first=8401 then region16=16;
+if Enc_comuna_first=8406 then region16=16;
+run;
+
+
+*guardamos base final Region 16;
+data enut.base_usuario_recod_r16_final;  
+set cruce_r16;            
+run;
+*/
+
+
+* formatos;
+data enut.base_usuario_recod_r16_final;  
+set enut.base_usuario_recod_r16_final;  
+SEXO=c13_1_1;
+run;
+
+*Etiqueta a los valores;
+PROC FORMAT;  
+VALUE VSEXO 
+1='HOMBRE'        
+2='MUJER';  
+RUN; 
+
+PROC FORMAT;  
+VALUE REGNEW 
+1='TARAPACÁ' 
+2='ANTOFAGASTA' 
+3='ATACAMA' 
+4='COQUIMBO' 
+5='VALPARAÍSO' 
+6='OHIGGINS' 
+7='MAULE' 
+8='BIOBIO' 
+9='LA ARAUCANÍA' 
+10='LOS LAGOS' 
+11='AYSÉN' 
+12='MAGALLANES' 
+13='METROPOLITANA' 
+14='LOS RÍOS' 
+15='ARICA Y PARINACOTA' 
+16='ÑUBLE';  
+RUN; 
+
+
+
+DATA enut.base_usuario_recod_r16_final;  
+SET enut.base_usuario_recod_r16_final;  
+FORMAT SEXO VSEXO.;
+FORMAT region16 REGNEW.;
+RUN;
+
+
+
+
+
+/****************     ESTIMACIONES REGION 16         ***********************************/
+
+/*ESCENARIO 1-R16 */
+
+title 'E1_R16:Estimacion Tiempos Cuidados Personales y Necesidades Fisiologicas Región 16';
+proc surveymeans	data=enut.base_usuario_recod_r16_final
+	nomcar 
+	sum mean clm varsum cvsum cv nobs;
+   var cper_dt;     /*variable a medir*/
+   strata VarStrat;  /*estrato enut*/
+   cluster VarUnit;  /*conglomerados*/
+   weight wgt2;     /*peso*/
+   domain region16 region16*SEXO SEXO ;  /*dominio*/
+ /* class   ;  Solo categoricas*/
+   ods output statistics=total_e1_r16;
+    ods output domain=d_e1_r16;
+run;
+
+
+/*ESCENARIO 2-R16 */
+
+title 'E2_R16:Estimacion trabajo de cuidados no remunerados región 16 (PARTICIPACION)';
+proc surveymeans	data=enut.base_usuario_recod_r16_final 
+	nomcar 
+	sum mean clm varsum cvsum cv nobs;
+   var p_tc_dt;     /*variable a medir*/
+   strata VarStrat;  /*estrato enut*/
+   cluster VarUnit;  /*conglomerados*/
+   weight wgt2;     /*peso*/
+   domain region16 region16*SEXO SEXO;  /*dominio*/
+ /* class   ;  Solo categoricas*/
+   ods output statistics=total_e2_r16;
+   ods output domain=d_e2_r16;
+run;
+
+
+/*ESCENARIO 3-R16*/
+
+title 'E3_R16: Estimacion trabajo de cuidados no remunerados región 16 (TIEMPO)';
+proc surveymeans	data=enut.base_usuario_recod_r16_final
+	nomcar 
+	sum mean clm varsum cvsum cv nobs;
+   var tc_dt;     /*variable a medir*/
+   strata VarStrat;  /*estrato enut*/
+   cluster VarUnit;  /*conglomerados*/
+   weight wgt2;     /*peso*/
+   domain region16 region16*SEXO SEXO;  /*dominio*/
+ /* class   ;  Solo categoricas*/
+   ods output statistics=total_e3_r16;
+   ods output domain=d_e3_r16;
+run;
+
+
+
+/*ESCENARIO 4-R16 */
+
+title 'E4_R16: Estimacion trabajo no remunerados región 16 (Participación)';
+proc surveymeans	data=enut.base_usuario_recod_r16_final
+	nomcar  
+	sum mean clm varsum cvsum cv nobs;
+   var p_trab_fscn_dt_1 ;     /*variable a medir*/
+   strata VarStrat;  /*estrato enut*/
+   cluster VarUnit;  /*conglomerados*/
+   weight wgt2;     /*peso*/
+   domain region16 region16*SEXO SEXO;  /*dominio*/
+ /* class   ;  Solo categoricas*/
+   ods output statistics=total_e4_r16;
+   ods output domain=d_e4_r16;
+run;
+
+
+/*ESCENARIO 5-R16 */
+
+title 'E5_R16: Estimacion trabajo no remunerados región 16 (Tiempo)';
+proc surveymeans	data=enut.base_usuario_recod_r16_final 
+	nomcar  
+	sum mean clm varsum cvsum cv nobs missing;
+   var trab_fscn_dt_1 ;     /*variable a medir*/
+   strata VarStrat;  /*estrato enut*/
+   cluster VarUnit;  /*conglomerados*/
+   weight wgt2;     /*peso*/
+   domain region16 region16*SEXO SEXO;  /*dominio*/
+ /* class   ;  Solo categoricas*/
+   ods output statistics=total_e5_r16;
+   ods output domain=d_e5_r16;
+run;
+
+
+
+/*EXPORTAR DATOS e1_r16*/
+PROC EXPORT DATA= WORK.d_e1_r16
+            OUTFILE= '//DIEGO_CAMPOS/Users/Dcamposp/Documents/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/comparacion_recibo/Escenario1_16.xlsx'
+            DBMS=EXCEL REPLACE;
+     SHEET="enut1_e1_r16"; 
+RUN;
+
+/*EXPORTAR DATOS e2_r16*/
+PROC EXPORT DATA= WORK.d_e2_r16
+            OUTFILE= '//DIEGO_CAMPOS/Users/Dcamposp/Documents/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/comparacion_recibo/Escenario2_16.xlsx'
+            DBMS=EXCEL REPLACE;
+     SHEET="enut2_e2_r16"; 
+RUN;
+
+/*EXPORTAR DATOS e3_r16*/
+PROC EXPORT DATA= d_e3_r16
+            OUTFILE= '//DIEGO_CAMPOS/Users/Dcamposp/Documents/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/comparacion_recibo/Escenario3_16.xlsx'
+            DBMS=EXCEL REPLACE;
+     SHEET="enut3_e3_r16"; 
+RUN;
+
+/*EXPORTAR DATOS e4_r16*/
+PROC EXPORT DATA= WORK.d_e4_r16
+            OUTFILE= '//DIEGO_CAMPOS/Users/Dcamposp/Documents/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/comparacion_recibo/Escenario4_16.xlsx'
+            DBMS=EXCEL REPLACE;
+     SHEET="enut4_e4_r16";
+RUN;
+
+/*EXPORTAR DATOS e5_r16*/
+PROC EXPORT DATA= WORK.d_e5_r16
+            OUTFILE= '//DIEGO_CAMPOS/Users/Dcamposp/Documents/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/comparacion_recibo/Escenario5_16.xlsx'
+            DBMS=EXCEL REPLACE;
+     SHEET="enut5_e5_r16"; 
+RUN;
+
+
+/*EXPORTAR BASE_USUARIO_RECOD_R16_FINAL*/
+PROC EXPORT DATA=ENUT.BASE_USUARIO_RECOD_R16_FINAL
+            OUTFILE= '//DIEGO_CAMPOS/Users/Dcamposp/Documents/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/comparacion_recibo/BASE_ENUT_RXVI.sav'
+            DBMS=SPSS REPLACE;
+   /*  SHEET="BASE"; */
+RUN;
+
+
+
+
+
+
+
+
+
+ods excel file="\\DIEGO_CAMPOS\Users\Dcamposp\Documents\INE\ENUT_Encuesta Nacional Uso del Tiempo\Recibido de Ivan Touron_20180710\comparacion_recibo\enut_e3_r16.xlsx" style=htmlblue options(start_at="B2" embedded_titles='yes' sheet_label='');
+
+ods excel options(sheet_name='d_1_16');
+TITLE1 'Estimacion Tiempos Cuidados Personales y Necesidades Fisiologicas Región 16(TIEMPO)';
+proc print data=d_1_16 noobs label style(header)={just=center vjust=center cellwidth=100};
+var Region16 N / style(data)={just=center  vjust=center tagattr='format:####'};
+var Mean CVSUM CVSUM StdErr / style(data)={just=center  vjust=center tagattr='format:#,###0.000000'};
+var LowerCLMean UpperCLMean/ style(data)={just=center  vjust=center tagattr='format:####0.00'};
+run;
+
+
+ods excel options(sheet_name='D_2_16');
+TITLE1 'Estimacion trabajo de cuidados no remunerados región 16 (PARTICIPACION)';
+proc print data=D_2_16 noobs label style(header)={just=center vjust=center cellwidth=100};
+var _ALL_ / style(data)={just=center  vjust=center tagattr='format:#,###0.00'};
+run;
+
+ods excel options(sheet_name='D_22_16');
+TITLE1 'Estimacion trabajo de cuidados no remunerados región 16 (TIEMPO)';
+proc print data=D_22_16 noobs label style(header)={just=center vjust=center cellwidth=100};
+var _ALL_ / style(data)={just=center  vjust=center tagattr='format:#,###0.00'};
+run;
+
+ods excel options(sheet_name='D_R3_R16');
+TITLE1 'Estimacion trabajo no remunerados región 16 (Participación)';
+proc print data=work.d_e3_r16 noobs label style(header)={just=center vjust=center cellwidth=100};
+var _ALL_ / style(data)={just=center  vjust=center tagattr='format:#,###0.00'};
+run;
+
+ods excel options(sheet_name='D_33_16');
+TITLE1 'Estimacion trabajo no remunerados región 16 (Tiempo)';
+proc print data=D_33_16 noobs label style(header)={just=center vjust=center cellwidth=100};
+var _ALL_ / style(data)={just=center  vjust=center tagattr='format:#,###0.00'};
+run;
+
+
+
+
+
+
+ods excel file="\\DIEGO_CAMPOS\Users\Dcamposp\Documents\INE\ENUT_Encuesta Nacional Uso del Tiempo\Recibido de Ivan Touron_20180710\comparacion_recibo\enut_e3_r16.xlsx" style=htmlblue options(start_at="B2" embedded_titles='yes' sheet_label='');
+
+ods excel options(sheet_name='D_R3_R16');
+TITLE1 'Estimacion trabajo de cuidados no remunerados región 16 (TIEMPO)';
+proc print data=work.d_e3_r16 noobs label style(header)={just=center vjust=center cellwidth=100};
+var Region16 N / style(data)={just=center  vjust=center tagattr='format:####'};
+var Mean CVSUM CVSUM StdErr / style(data)={just=center  vjust=center tagattr='format:#,###0.000000'};
+var LowerCLMean UpperCLMean/ style(data)={just=center  vjust=center tagattr='format:####0.00'};
+format REGION REGION.;
+format REGION REGION.;
+run;
+
+
+/*
+var Region Tasa Error_IC CV/ style(data)={just=center  vjust=center tagattr='format:#,###0.00'};
+var DF / style(data)={just=center  vjust=center tagattr='format:#,###0.'};
+*/
+
+
+
+
+
+
+
+
+
+/*BASES A NIVEL VIVIENDAS*/
+
+PROC SORT DATA=enut.base_usuario_recod_r16_final Out=ENUT.base_r16_final_viviendas;
+BY REGION16 VarStrat Enc_Comuna_first id_vivienda;  
+RUN;
+
+proc means data=ENUT.base_r16_final_viviendas noprint;
+by REGION16 VarStrat Enc_Comuna_first id_vivienda;
+   var id_vivienda;
+   output out=ENUT.base_r16_final_viviendas2 n=personas_por_vivienda ;
+   run;
+
+
+/*PEGAR PERSONAS POR VIVIENDA (base_r16_final_viviendas2) A USUARIO_RECOD_R16_FINAL*/
+
+
+*Generar Merge con la base original recod y cruzar con insumo_id_hogar;
+data base_usuario_recod_r16;  
+set enut.base_usuario_corregida_recod;            
+run;
+
+proc sort data=base_usuario_recod_r16;
+by id_hogar;
+
+proc sort data=enut.insumo_id_hogar;
+by id_hogar;
+
+data cruce_r16;
+merge base_usuario_recod_r16(in=a) enut.insumo_id_hogar(in=b);
+by id_hogar;
+if a=1;
+run;

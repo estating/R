@@ -1,0 +1,136 @@
+## Shiny  ####   20190821
+install.packages("knitr")
+install.packages("rpivotetable")
+install.packages("ggplot2")
+install.packages("plotly")
+install.packages("dplyr")
+install.packages("openintro")
+install.packages("highvharter")
+install.packages("ggvis")
+
+library(shiny)
+library(shinydashboard)
+library(knitr)
+library(rpivotetable)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(openintro)
+library(highvharter)
+library(ggvis)
+
+
+
+
+#Grafico a implementar
+#gauge(ene[,7], min = 26.82, max = 1806.92, symbol = '%', gaugeSectors(success = c(26.82,40), warning = c(40,400), danger = c(400, 1806.92)))
+
+
+###########################################################################################
+help(setwd)
+# Fijar el directorio de trabajo en el lugar de donde esta el archivo ejecutandose 
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# Cargar fichero para exportar funciones
+source("histograma.R")
+
+
+
+
+# ---------------------
+# Aplicacion Shiny
+# ---------------------
+
+##################################################################################
+### Dasdboard
+
+#Este objeto consistirá de las tres partes que conforman el cuadro de mando: 
+#el encabezado, el menú lateral y el cuerpo o Body Document, 
+#donde se plasmarán los diferentes KPIs. Las funciones que definirán estos tres entornos son:
+#1.-      dashboardHeader()
+#2.-      dashboardSidebar()
+#3.-      dashboardBody()
+
+# ---------------------
+# Barra Lateral - Sidebar
+# ---------------------
+sidebar <- dashboardSidebar(
+  sidebarMenu(
+# Selector de fechas
+selectInput("selector", "Selector",choices = c(2000:2013), multiple=TRUE, selectize=TRUE,width = '95%'),
+# Input inside of menuSubItem
+menuItem("Seccion 1", tabName = "p1", icon=icon("dashboard"),fileInput(inputId='archivo',label="Importa tu archivo:")),
+menuSubItem(icon = NULL,sliderInput("maximo", "Maximo", min=0, max=25, value=20,width = '95%')),
+box(width = 1, solidHeader = TRUE,radioButtons("color", "Color", # inline = TRUE,c(Blue = "blue", Green = "green", Red = "red")
+      )
+    )
+  )
+)
+
+
+# ---------------------
+# cuerpo - Body
+# ---------------------
+
+body <- dashboardBody(
+mainPanel(
+tabsetPanel(type = "tabs", tabPanel("Tab 1",fluidRow(box(title = "Histograma Basico",status = "primary",
+plotOutput("grafico1", height = 400)
+),
+                           
+box(title = "Histograma ggplot2",plotOutput("grafico2", height = 400)))), 
+tabPanel("Tab 2", h2("Tab 2")), tabPanel("Tab 3", h2("Tab 3")))))
+
+)
+
+#tags$head(tags$img(src='ipsos.png',height='80',width='230'),
+ #         tags$style(HTML('.skin-blue .main-header .logo{
+  #                        background-color: #fff;color: #201545;
+   #                       }
+    #                      .skin-blue .main-header .navbar
+     #                     {
+      #                    background-color: #201545;
+       #                   }
+        #                  .skin-blue .main-sidebar{background-color: #201545;
+         #                 }
+          #                .skin-blue .sidebar-menu>li.active>a{
+           #               background: #201545;
+            #              }'))
+
+
+
+
+# ---------------------
+# Inteface - UI #ui definirá la interfaz gráfica de la aplicación. 
+# ---------------------
+
+ui <- dashboardPage(
+dashboardHeader(title = 'DCP Shiny:prueba1', titleWidth = 290),sidebar,body,
+selectInput("selector", "Selector",choices = c(2000:2013), multiple=TRUE, selectize=TRUE,width = '95%'))
+
+
+
+# ---------------------
+# Servidor - Server jugará el papel del servidor de la aplicación. 
+#Es decir, todos los análisis, operaciones y gráficos que se muestren en el body document se deberán programar en este objeto.
+# ---------------------
+
+server <- function(input, output) {
+output$grafico1 <- renderPlot({
+    if (is.null(input$maximo) || is.null(input$color))
+      return()
+    visual(input$maximo,input$color)
+  })
+  output$grafico2 <- renderPlot({
+    source("histograma2.R")
+  })
+}
+
+server = function(input, output) {}
+shinyApp(ui, server)
+
+################# fin programacion ###################################################################################
+
+
+  
+#####################################################################################

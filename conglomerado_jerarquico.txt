@@ -1,0 +1,56 @@
+
+#Conglomerados Jerarquicos
+
+library(RODBC)
+canalexcel<-odbcConnectExcel2007("C:/Users/Dcamposp/Documents/INE/Computación Estadística y Superficie de Respuesta/Analisis Multivariado/analisis de conglomerados/Cluster Ruspini en R/data_ruspi.xlsx")
+canalexcel
+sqlTables(canalexcel)
+sqlFetch(canalexcel,"Hoja1$")
+ruspi<-sqlFetch(canalexcel,"Hoja1$")
+odbcClose(canalexcel)  ##Cerramos conexion
+
+dat<-ruspi[,2:3]
+plot(dat, col="red", pch=3,cex=2, font=5)
+text(locator(1),"outlier",adj=0)
+locator(n=10,type = "n")
+identify(dat) ##selecciono con el mouse
+#pch=forma
+#cex=tamaño
+#font=formato del eje
+
+dis1<-dist(ruspi,method="euclidean")
+dis1
+
+clusdis1<-hclust(dis1,method ="complete")
+
+##Dendograma
+#Un dendograma es un árbol de clúster donde cada grupo está vinculado a dos 
+#o más grupos sucesores. Estos grupos están anidados y organizados como un árbol. 
+
+plot(clusdis1, cex=0.5, col="red", hang = -1, 
+     main="Dendograma, Distancia Euclidea, metodo completo")
+rect.hclust(clusdis1, k = 9, border = 2:10)  ##Arma grupos en la grafica
+
+
+
+
+## Componentes principales
+T1cp<-princomp(dat,cor=F)
+summary(T1cp)
+cov1<-cov(dat)
+ei1<-eigen(cov1)
+val1<-round(ei1$values[1:2]/sum(ei1$values),4)
+val1  ## Peso de cada variable
+biplot(T1cp,cex.axis=0.8,cex=0.8,main=(paste("Biplot del Topping 1: Variabilidad Total es",val1[1]+val1[2])), xlab=paste("Cp1 es",val1[1]),ylab=paste("Cp2 es",val1[2]))
+abline(h=0,v=0)
+#######################################################################################################
+
+
+T1cp$loadings
+par(mfrow=c(1,2),bg="")
+barplot(T1cp$loadings[,1])
+abline(h=0,v=0)
+title("Componente 1")
+barplot(T1cp$loadings[,2])
+abline(h=0,v=0)
+title("Componente 2")
