@@ -1,0 +1,61 @@
+ar<-"F:\\fin.txt"
+a<-read.table(ar,header=T,sep="\t",na.strings = "NA")
+attach(a)
+names(a)
+
+t<-vector(mode="numeric",length=nrow(a))
+t[(fecha==1) & (atencion.SOME==1) & (SOME=1)]<-1
+t[(fecha==1) & (atencion.SOME==2) & (SOME=1)]<-2
+t[(fecha==1) & (atencion.SOME==3) & (SOME=1)]<-3
+t[(fecha==2) & (atencion.SOME==1) & (SOME=1)]<-4
+t[(fecha==2) & (atencion.SOME==2) & (SOME=1)]<-5
+t[(fecha==2) & (atencion.SOME==3) & (SOME=1)]<-6
+t[(fecha==3) & (atencion.SOME==1) & (SOME=1)]<-7
+t[(fecha==3) & (atencion.SOME==2) & (SOME=1)]<-8
+t[(fecha==3) & (atencion.SOME==3) & (SOME=1)]<-9
+
+ta<-table(t)
+ta
+
+x<-matrix(c(ta[2]/(sum(ta)-51)*100,ta[3]/(sum(ta)-51)*100,ta[4]/(sum(ta)-51)*100,
+ta[5]/(sum(ta)-51)*100,ta[6]/(sum(ta)-51)*100,ta[7]/(sum(ta)-51)*100,
+ta[8]/(sum(ta)-51)*100,ta[9]/(sum(ta)-51)*100,ta[10]/(sum(ta)-51)*100),nrow=3,ncol=3)
+colnames(x)<-c("Lunes","Miercoles","Viernes")
+rownames(x)<-c("Buena","Regular","Mala")
+x
+barplot(t(x),
+names.arg=c("Buena","Regular","Mala"),beside=T,legend.text=TRUE,ylim=c(0,25),
+main="Opinión de los usuarios respecto\na la atención del SOME",
+ylab="frecuencia porcentual (%)",xlab="Opinión respecto a la atención del SOME",
+font.lab=4,cex.main=1.2,font.main=4,col=c("red","blue","green"))
+box()
+
+x11<-round(x[1,1],1)
+x21<-round(x[1,2],1)
+x31<-round(x[1,3],1)
+x12<-round(x[2,1],1)
+x22<-round(x[2,2],1)
+x32<-round(x[2,3],1)
+x13<-round(x[3,1],1)
+x23<-round(x[3,2],1)
+x33<-round(x[3,3],1)
+z11<-paste(x11,"%")
+z21<-paste(x12,"%")
+z31<-paste(4.4,"%")
+z12<-paste(x21,"%")
+z22<-paste(x22,"%")
+z32<-paste(4.4,"%")
+z13<-paste(x31,"%")
+z23<-paste(x32,"%")
+z33<-paste(4.4,"%")
+z11;z12;z13;z21;z22;z23;z31;z32;z33;
+x
+text(1.3,x[1,1]+1,z11,cex=0.7,font=4)
+text(2.5,x[1,2]+1,z12,cex=0.7,font=4)
+text(3.7,x[1,3]+1,z13,cex=0.7,font=4)
+text(5.3,x[2,1]+1,z21,cex=0.7,font=4)
+text(6.5,x[2,2]+1,z22,cex=0.7,font=4)
+text(7.7,x[2,3]+1,z23,cex=0.7,font=4)
+text(9.3,x[3,1]+1,z31,cex=0.7,font=4)
+text(10.5,x[3,2]+1,z32,cex=0.7,font=4)
+text(11.7,x[3,3]+1,z33,cex=0.7,font=4)
