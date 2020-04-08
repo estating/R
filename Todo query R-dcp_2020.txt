@@ -1,0 +1,2834 @@
+gc()  # Elimina memoria
+list(worms)#Muestra todo lo que tiene un archivo
+str()##para preguntar qué tipo de objeto es##
+search() #Muestra packages activos
+CRUCE1<-as.vector(base222$CRUCE1)##RECODIFICA LA VARIABLE Y LA DEJA ASI PARA SIEMPRE
+base222$CRUCE1<- NULL   ##ELIMINA VARIABLE CREADA  BASE$VARIABLE
+
+
+## Shiny  ####   20190821
+install.packages("knitr")
+install.packages("rpivotetable")
+install.packages("ggplot2")
+install.packages("plotly")
+install.packages("dplyr")
+install.packages("openintro")
+install.packages("highvharter")
+install.packages("ggvis")
+
+
+library(knitr)
+library(rpivotetable)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(openintro)
+library(highvharter)
+library(ggvis)
+
+
+
+## 1.- CARGA DE ARCHIVOS EN DISTINTOS FORMATOS ###################
+
+##1.1- Creo una ruta donde provienen los archivos
+help(setwd)
+getwd('C:/Users/diego.campos/Documents/DCP_Ipsos/Material Academico/Bases de datos/SPSS/socio2.sav')
+###############################################################################################
+
+### leyendo Excel (ok)##################
+install.packages("survey")
+install.packages("readxl")
+remove.packages("foreign")  #desisntala paquete
+
+#library(survey)
+library(readxl)
+
+enut2<- read_excel("C:/Users/Diego/Documents/DCP/Ingenieria Industrial Estadistica/R_dcp/Base_Revision_DEF_2018_Preliminar.xlsx")
+ene<-data.frame(enut2[1:1000,1:8])
+ene
+names(ene)
+
+plot(density(ene[,7]))
+
+
+#####################################################################################################
+
+
+#1.2 Canal Excel (ok)#########################################################################
+install.packages("RODBC")
+library(RODBC)
+canalexcel<-odbcConnectExcel2007("C:/Users/diego.campos/Documents/DCP_Ipsos/Proyectos TA/Banco de Chile/Entregas_oficiales/20190627/ANALISIS/20190709_personas/bbdd_out_todo_v6_20190710.xlsx")
+canalexcel
+sqlTables(canalexcel)
+sqlFetch(canalexcel,"BBDD_TA_GLOBAL_JUNIO_BCH$")
+eme1<-sqlFetch(canalexcel,"BBDD_TA_GLOBAL_JUNIO_BCH$")
+odbcClose(canalexcel)  ##Cerramos conexion
+eme1
+###########################################################################
+
+### 1.3 LLamando Datos DE SPSS (.dat)  ########################################################################
+data2<-read.table("C:/Users/Dcamposp/Documents/INE/Informalidad Laboral/Bases y Tablas Nota Estadistica/20180327_DEF/Base_DEF.dat", 
+                  header=T,sep="/t",na.strings = "NA")
+########################################################################################################
+
+
+
+BD.SPSS.Personas<-"C:/Users/Diego/Documents/DCP/Ingenieria Industrial Estadistica/R_dcp/Base_Revision_DEF_2018_Preliminar.sav"
+library(foreign)
+BasePer<-read.spss(BD.SPSS.Personas, use.value.labels = FALSE, to.data.frame=TRUE, reencode="UTF-8")
+BasePer[1:10,]
+
+## Carga de bbdd en formato .csv ##
+epm<-read.csv("C:/Users/diego.campos/Documents/DCP_Ipsos/Proyectos TA/EPM_Colombia/Analisis_20190530/epm_r.csv", 
+              header=T,sep=";",na.strings = "NA")
+
+
+###1.4 LLamando Datos DE SPSS TOMANDO EN CUENTA LAS CODIFICACIONES (ok 2020) #############################################
+library(foreign)
+datos<-read.spss(file.choose(),T)
+socio<-data.frame(datos)
+attach(socio)
+names(socio)
+socio[1:10,]
+#####################################################################################################
+
+
+
+######1.5 LLamando Datos TXT.msDos (manera clasica)  #####################################################
+dat<-read.csv("C:/Users/Dcamposp/Documents/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/Base Enut SAS/base_enut_r16.csv", 
+                header=T,sep=";",na.strings = "NA")
+class(dat)
+attach(dat)
+names(dat)
+dat[1:10,1:10]
+############################################################################################
+
+
+###1.6  leyendo Excel ##################
+install.packages("survey")
+library(survey)
+library(readxl)
+enut2<- read_excel("~/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/Base Enut SAS/base_enut_r16.xlsx")
+View(enut2)
+#####################################################################################################
+
+
+##1.7  LLamar tablas de SAS
+install.packages("sas7bdat")
+library(sas7bdat)
+enut<-read.sas7bdat("C:/Users/Dcamposp/Documents/INE/ENUT_Encuesta Nacional Uso del Tiempo/Recibido de Ivan Touron_20180710/Base Enut SAS/base_usuario_recod_r16_final.sas7bdat")
+names(enut)
+enut[1:10,1:19]
+##################################################################################################
+
+
+
+##### 2.- EXPORTACION DE ARCHIVOS ###################################################
+
+#2.1 Exportando datos
+library(foreign)
+install.packages("forcats")
+library(forcats)
+
+##2.2 Exportando a Excel
+ruta1<-'C:/Users/Dcamposp/Documents/INE/R/'
+library(openxlsx)
+write.xlsx(datos, paste0(ruta1, "nombre_archivo.xlsx"))
+####################################################################
+
+##2.3 Exportando a SPSS
+write.csv(x1,paste0(ruta1, "spss1.csv"), row.names=F)
+file.show('File_spss.txt') 
+file.show('Code_spss.sps')
+
+## 2.4 Exportando TXT
+write.table(x1, paste0(ruta1, "nombre_archivo.txt"))
+
+eme5<-read.dta("C:/Users/Dcamposp/Documents/INE/EME_Encuesta Emprendimiento/bbdd_full_EME_5.dta")
+########################################################################################################
+
+#matriz grafica
+par(mfrow=c(1,2),oma=c(0, 0, 4, 0))
+
+## 3.- CRUCE DE INFORMACION
+install.packages("data.table")
+library(data.table)
+
+###3.1 merge ########################
+help("merge")
+
+## 3.1.1 Ejemplo
+dt1 <- data.table(A = letters[1:10], X = 1:10, key = "A")
+dt2 <- data.table(A = letters[5:14], Y = 1:10, key = "A")
+dt1; dt2
+merge(dt1, dt2) ## cruce clasico, muestra key y lo que cruzó
+merge(dt1, dt2, all = TRUE)   ## muestra lo que cruzó y lo que no.
+########################################################################
+
+## 3.1.2 Ejemplo
+male<-structure(list(madera = c(123992, 176148, 198341, 95762, 40791, 165166, 247339, 74720, 208037),
+                     legna = c(12537, 56258, 15399, 7120, 177052, 10699, 28764, 15160, 11736)), .Names = c("madera", "legna"), 
+                row.names = c("Avila", "Burgos", "León", "Palencia", "Salamanca", "Segovia", "Soria", "Valladolid", "Zamora"), 
+                class = "data.frame")
+
+fem<-structure(list(madera = c(123990, 176120, 198341, 95762, 40791, 165166, 247339, 74720, 208037),
+                    legna = c(12537, 56258, 15399, 7120, 177052, 10699, 28764, 15160, 11736)), .Names = c("madera", "legna"), 
+               row.names = c("Avila", "Burgos", "León", "Palenc", "Salama", "Sego", "Sor", "Valladoli", "Zamor"), 
+               class = "data.frame")
+
+cru<-merge(male,fem)
+cruce<-merge(male,fem, by.x = "row.names", by.y="row.names") ## IMPORTANTE
+s.cruce<-cruce[,2]+cruce[,4]  ## SUMA DE VARIABLES
+cbind(cruce,s.cruce)
+#################################################################################
+
+
+
+
+### 4- CREACION DE TABLAS DE FRECUENCia y %
+socio
+## 4.1
+cbind(table(socio[,2]))
+
+## 4.2- Tabla con 2 variables y pocentaje por fila
+prop.table(table(socio[,2],socio[,4]),1))
+
+## 4.3- Tabla con 2 variables y pocentaje por columna
+t2<-prop.table(table(socio[,2],socio[,4]),2)     ##el 2 al final representa la suma por columna, si fuese 1 es por fila.
+s2<-colSums(prop.table(table(socio[,2],socio[,4]),2))*100
+
+rbind(t2,s2)
+
+
+##sexo encuestador
+# exclude = NA, exclude=NULL, useNA="ifany"
+with(datos[,7],table(datos[,6],datos[,39],exclude = NA))
+## Check the design:
+with(warpbreaks, table(wool, tension))
+table(state.division, state.region)
+
+
+
+
+
+# crea dos grupos de calibración
+#C1=mujeres
+#C2=personas entre 20 y 24
+socio$C2<- NULL 
+
+socio$C1<-ifelse(socio$sexo=='mujer',1,0)
+socio$C2<-ifelse(socio$sexo=='hombre',1,0)
+socio$C3<-ifelse(socio$nivel_socio=='medio',1,0)
+socio$C4=ifelse(U$edad>=20 & U$edad<25,1,0)
+
+##############################################################
+
+
+
+
+#- Diagrama de Caja del ingreso
+boxplot(m$ingreso, col='brown2')
+##boxplot(s1~Bono2+Cargo)
+#col="gray64"
+
+#Diagrama de caja segmentado por estrato
+boxplot(m$ingreso~m$estrato,col='brown2')
+
+mad(eme$fue_1_ma)  #desv.absoluta media
+quantile(s1,seq(0, 1,.05))   ##Todos los percentiles
+hist(s1, nclass = 7, plot = T, probability = T, xlab = "Histograma s1",ylim=c(0,15000))
+stem(eme$fue_1_ma) #Diagrama de tallo
+
+
+##Docima para la media. 1 población
+doc.t1<-t.test(s1)  ##t.test(s1,mu=60)
+doc.t1
+doc.t1$statistic
+doc.t1$parameters
+doc.t1$p.value 
+doc.t1$conf.int
+#############################################
+
+##Docima Wilcoxon##########################################
+wilcox.test(d2[Profesion=="Electrico"&"Sueldo1">=1000000, )
+##########################################################
+
+##Kolgomorov Smirnov
+x <- rnorm(50) 
+y <- runif(30) 
+ks.test(x,y) 
+#Como el p-valor es prácticamente cero, 
+#rechazaremos la hipótesis de que los datos vienen de la misma distribución. 
+
+##shapiro.test(x) Normalidad
+shapiro.test(x) 
+#el p-valor es grande (0.78), y no rechazaremos la hipótesis nula de que los datos x provienen de una normal. 
+
+
+##Chi Cuadrado   se trata de ver si las variables son o no son independientes. 
+tt<-table(datos[,6],datos[,8],exclude = NA)
+chisq.test(tt)
+#######################################################
+
+
+##Modelo Lineales
+dens<-c(12.7,17.0,66.0,50.0,87.8,81.4,75.6,66.2,81.1,62.8,77.0,89.6,
+        18.3,19.1,16.5,22.2,18.6,66.0,60.3,56.0,66.3,61.7,66.6,67.8)
+vel<-c(62.4,50.7,17.1,25.9,12.4,13.4,13.7,17.9,13.8,17.9,15.8,12.6,
+       51.2,50.8,54.7,46.5,46.3,16.9,19.8,21.2,18.3,18.0,16.6,18.3)
+
+v2<-sqrt(vel)
+
+reg<-lm(v2~dens)
+summary(reg)
+
+recta.ls<-lsfit(dens,v2)
+plot(dens,v2,col="red",cex=1,pch=2)
+abline(recta.ls)
+anova(reg)
+ls.print(recta.ls, digits=4, print.it=T)
+##estimacion de la desv.est de la demanda
+ls.diag(recta.ls)
+##############################################################################################
+
+
+
+##Extraccion de registros segun condiciones##########################################
+d2[Profesion=="Electrico"&Calificacion=="Mediana",]
+sum(d2[Calificacion=="Mediana","Sueldo1"])
+d2[Ciudad=="Casablanca",c("Rut","Profesion","Cargo")]
+
+subset(d2[,2:5]&Fecha.Ingreso>41306) #notice that we are taking the logical 'and' epiS epiImp epilie epiNeur 12 12 3 6 1 118 8 2 6 2 
+subset(person.data[,3:7], epilie>6 | epiNeur ==2 )
+
+
+#Valores perdidos
+#Eliminar de un vector 
+x<- c(1, 2, NA, 4, NA, 5) 
+bad <- is.na(x)                     # Creamos un vector lógico para extraer solo lo válidos
+x[!bad] --> [1] 1 2 4 5        # Usamos el opuesto a bad, que sería !bad
+
+#Extraer solo los valores válidos 
+x <- c(1, 2, NA, 4, NA, 5) 
+good <- complete.cases(x, y)
+good --> [1] TRUE TRUE FALSE TRUE FALSE TRUE
+x[good] --> [1] 1 2 4 
+##########################################################
+
+##  cambiar nombres a columnas ################################
+d2
+colnames(d2)<-c("cod", "rutid", "paterno", "fecha")
+attach(as.data.frame(d2))
+###############################################################
+
+
+
+##Creacion de Tablas  #########################################
+
+##Caso 1
+bol<-c(350, 450, 550, 650)
+pas<-1:10
+tot<-matrix(0,10,4)
+tot<-outer(pas,bol,"*")
+rownames(tot)<-1:10
+colnames(tot)<-c("350","450","550","650")
+tot
+
+##Caso2
+far<-matrix(0,20,10)
+dc<-seq(0,200,10)
+uc<-0:9
+cfa<-function(x,y){
+  32+1.8*(x+y)
+}
+far<-outer(dc,uc,cfa)
+rownames(far)<-dc
+colnames(far)<-uc
+far
+##################################################################
+
+
+
+###Graficas  ##############################
+####ayudas####
+####colorea los puntos segun area
+group <- sample(3, 100, replace = TRUE)
+theta <- 0.5 * rnorm(100) + 0.5 
+r <- rnorm(100, 4)
+plot(r, theta, col = c("red","blue")[group],pch = 20)
+############################################
+
+##superpone otro grafico al anterior#######
+plot(y)
+par(new=T)
+plot(x)
+#######################################
+
+##permite escribir arriba del grafico un punto
+plot(x)
+text(locator(1),"outlier",adj=0)
+################################################
+
+##Identifica la cordenada (x,y de un plot con el mouse
+plot(x,y)
+identify(x,y) ##selecciono con el mouse
+
+
+## Cambiar nombre a columna
+xx
+colnames(xx)<-c("", "c1", "c2", "c3")
+attach(as.data.frame(xx))
+
+## Plot
+plot(d2[,7],d2[,8],type="n")
+## pch: forma puntos, cex=0.8
+plot(d2[,7],d2[,8], xlab="Hrs Trabajo", ylab="Sueldo ",xlim=c(0, 200),pch=5, col="red",font=3)
+points(d2[,7],d2[,8], col="green", pch=8)
+title("Relación entre Peso e IMC para Varones y Damas")
+legend(c(100, 140), c(8, 17), "Varones = ")
+legend(c(100, 140), c(8, 14), "Damas = ")
+points(135,15.3, pch=8,col="black") 
+points(135,12, pch=8, col="red") 
+abline(h=1500000,v=0)
+########################################
+
+##Grafica de Torta ######
+d2
+fre<-table(Calificacion)
+fre[1]
+pie(fre,col=c("green","blue","red","orange","pink"),main="Calificacion")
+box()
+t11<-round((fre[1]/(fre[1]+fre[2]+fre[3]+fre[4]+fre[5]))*100,0)
+t21<-round((fre[2]/(fre[1]+fre[2]+fre[3]+fre[4]+fre[5]))*100,0)
+t31<-round((fre[3]/(fre[1]+fre[2]+fre[3]+fre[4]+fre[5]))*100,0)
+t41<-round((fre[4]/(fre[1]+fre[2]+fre[3]+fre[4]+fre[5]))*100,0)
+t51<-round((fre[5]/(fre[1]+fre[2]+fre[3]+fre[4]+fre[5]))*100,0)
+t11;t21;t31;t41;t51
+
+t12<-paste(t11,"%")
+t22<-paste(t21,"%")
+t32<-paste(t31,"%")
+t42<-paste(t41,"%")
+t52<-paste(t51,"%")
+
+text(0,.9,t12,font=3,cex=0.8)
+text(0,-.9,t22,font=3,cex=0.8)
+text(0,.9,t32,font=3,cex=0.8)
+text(0,-.9,t42,font=3,cex=0.8)
+text(0,.9,t52,font=3,cex=0.8)
+###########################################################################
+##Barplot
+barplot(fre)
+
+#un grafico arriba del otro  #############################################
+plot(density(x), type="l", col="blue")
+x1<-seq(100,900,1)
+lines(x1,dnorm(x1,mu,ds), type="l", col="red")
+#########################################################################
+
+
+
+## Matrices y Vectores  #########################################################3
+
+c<-c(4,5,6,7,8,9)
+
+eigen(diag(t(matrix(c,3,2))))
+
+np<-10000; mu<-500; ds<-100; nm<-600; n<-5
+x<-rnorm(np,mu,ds)
+x
+muestra<-matrix(nrow=nm,ncol=n)
+as.vector(NA)
+prom<-vector(NA,length=n)
+varmues<-vector(NA,length=n)
+muestra
+prom
+varmues
+help("sample")
+
+x<-rep(1:10)
+x
+y1<-sample(x,7,replace=TRUE)
+Y2<-sample(x,7,replace=TRUE)
+##############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###########  ANALISIS PREDICTIVO TITANIC ######################################################
+
+#load("~/DCP/Analisis Predictivo/titanic.raw.rdata")
+#titanic.raw
+#dim(titanic.raw)
+
+tit<-read.table('C:/Users/Dcamposp/Documents/INE/Computación Estadística y Superficie de Respuesta/Bases de datos/titanic.txt',
+                header=T,sep="\t",na.strings = "NA")
+attach(tit)
+names(tit)
+
+
+##Grafico de supervivencia por clase
+library(labeling)
+library(digest)
+
+install.packages("partykit")
+
+library(C50)
+library(ggplot2)
+
+
+par(mfrow=c(1,2),oma=c(0, 0, 4, 0))
+ggplot(tit, aes(factor(tit$Class), fill =factor(tit$Survived)))+geom_bar() +
+  labs(x="Clase", y="Número de pasajeros") + ggtitle("Número de pasajeros que sobrevivieron por Clase"))
++guides(fill=FALSE) +theme(plot.title = element_text(hjust = 0.5)) + theme(panel.background = element_rect(fill= "white"))
+
+help("guides")
+
+
+vector1 <- c(1,2,3,4)
+library(ggplot2) 
+ggplot(vector1, aes(x=x, y=value)) + boxplot()
+
+qplot(1,vector1, geom="boxplot")
+
+qplot(df, aes(gp, y)) +
+  geom_point() +
+  geom_point(data = ds, aes(y = mean), colour = 'red', size = 3)
+
+
+ggplot(df) +geom_point(aes(gp, y)) +
+geom_point(data = ds, aes(gp, mean), colour = 'red', size = 3)
+
+
+##Revisado ok
+ggplot() +
+geom_point(data = df, aes(gp, y)) +
+geom_point(data = ds, aes(gp, mean), colour = 'red', size = 3) +
+geom_errorbar(data = ds, aes(gp, mean, ymin = mean - sd, ymax = mean + sd), colour = 'red', width = 0.4)
+
+s<-runif(nrow(dat))
+titanic<-dat[order(s),]
+
+##1453, corresponde al 66% de los datos de titanic
+0.66*2201
+
+##748, corresponde al 33% de los datos de titanic
+
+train<-titanic[1:1453,]
+test<-titanic[1454:2201,]
+
+modelo<-C5.0(train[,-4],train[,4])
+
+summary(modelo)
+
+plot(modelo)
+
+help("ggplot")
+help("guides")
+
+help("boxplot")
+df <- data.frame(gp = factor(rep(letters[1:3], each = 10)),y = rnorm(30))
+ds <- plyr::ddply(df, "gp", plyr::summarise, mean = mean(y), sd = sd(y))
+
+ggplot(df, aes(gp, y)) +
+  geom_point() +
+  geom_point(data = ds, aes(y = mean), colour = 'red', size = 3)
+
+boxplot(decrease ~ treatment, data = OrchardSprays,
+        log = "y", col = "bisque")
+
+as.matrix(df)
+plot(df[,1]~df[,2])
+
+boxplot(table(df))
+
+data(iris)
+head(iris)
+str(iris)
+set.seed(9850)
+g<-runif(nrow(iris))
+g
+irisr<-iris[order(g),]
+irisr
+str(irisr)
+library(C50)
+C5.0(irisr  [1:100,-5])
+C50(irisr  [1:100,-5])
+HELP(C50)
+library(partykit)
+
+
+log((0.16)/(1-0.16))
+#wi=n(1-pi)p1
+wi<-200*(1-0.16)*0.16
+wi
+#######################################################################################################3
+
+
+
+
+install.packages("candisc")
+install.packages("car")
+library(car)
+install.packages("heplots")
+install.packages("sqldf")
+install.packages("sqldf")
+
+
+library(candisc)
+datos<-read.csv2("Fitoplancton.csv",header=TRUE,encoding="latin1")
+datos<-na.exclude(datos)
+attach(datos)
+datos
+mod <- lm(cbind(Cianophyceae, Euglenophyceae, Clorophyceae,
+                Zygophyceae, Bacillariophyceae, Crysophyceae, Cryptophyceae,
+                Dinophyceae, Xanthophyceae, NO2, NO3, NH4, SiO2) ~ Lago+Area,
+          data=datos)
+can <- candisc(mod, term="Lago", data=datos, ndim=1)
+plot(can,titles.1d = c("Puntuación canónica", "Estructura"))
+summary(can, means = FALSE, scores = TRUE, coef = c("std"), digits = 2)
+
+
+
+
+
+ocupado<-datos(datos[CISE=<7&CISE=>1]) 1 else 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Programa ESII
+###################
+#   REINICIAR R   #
+###################
+rm(list=ls(all=TRUE))
+gc(verbose=FALSE,reset=FALSE)
+
+
+####################################
+#   DEFINIR DIRECCIÓN DE ARCHIVOS  #
+####################################
+
+BD.SPSS.Personas = "C:/Users/Lmolina/Documents/R ESI/ESI 2016/BBDD 2016/ESI_2016_Personas_UsuariosInternos_I+D.sav"
+
+Carpeta.Resultados = "C:/Users/Lmolina/Documents/R ESI/ESI 2016/OutPut 2016/"       # La dirección debe terminar en "/"
+
+
+#########################
+#   DEFINIR PARÁMETROS  #
+#########################
+
+replicas = 2000 # RÉPLICAS PARA EL REMUESTREO
+
+n_min = 6       # MÍNIMO DE OBSERVACIONES PARA MOSTRAR ESTIMACIÓN EN CUADROS DE SALIDA
+
+###################################
+#   INSTALAR PAQUETES NECESARIOS  #
+###################################
+
+# install.packages("foreign")       # Importar bases de datos (SPSS, STATA, DBF, etc.)
+# install.packages("survey")        # Análisis de muestras complejas
+# install.packages("XLConnect")     # Conexión a Excel (NECESITA TENER JAVA)
+# install.packages("car")           # Recodificar
+# install.packages("gtools")        # Macros
+# install.packages("plyr")          # Límites de memoria
+# install.packages("data.table")    # Mezclar tablas
+# install.packages("stringi")       # Concatenar
+# install.packages("dplyr")         # Select
+# install.packages("DataCombine")   # Lag / Mezclar tablas
+# install.packages("stringr")       # Manipular cadenas
+
+###################################
+#   ACTIVAR PAQUETES NECESARIOS   #
+###################################
+
+require(foreign)       # Importar bases de datos (SPSS, STATA, DBF, etc.)
+require(survey)        # Análisis de muestras complejas
+require(XLConnect)     # Conexión a Excel
+require(car)           # Recodificar
+require(gtools)        # Macros
+require(plyr)          # Límites de memoria
+require(data.table)    # Mezclar tablas
+require(stringi)       # Concatenar
+require(dplyr)         # Select
+require(DataCombine)   # Mezclar / Lag
+require(stringr)       # Manipular cadenas
+
+########################################
+#   IMPORTA LA BASE DE DATOS PERSONAS  #
+########################################
+Tiempo.Proceso = data.frame(Proceso="Importa Base de Personas",Hora_Inicio=Sys.time())
+
+BasePer=read.spss(BD.SPSS.Personas, use.value.labels = FALSE, to.data.frame=TRUE, reencode="UTF-8")
+
+
+###################################################
+#   DEFINE ETIQUETAS DE VALORES A LAS VARIABLES   #
+###################################################
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Define etiquetas",Hora_Inicio=Sys.time()))
+
+
+BasePer$Provincia = Recode(BasePer$ESTRATO,"c(4011,4021,4032,4049)=1;c(4082,4099)=2;c(4051,4062,4079)=3;c(5101,5111,5221,5142,5159)=4;c(5131,5121,5232,5239)=5;
+                           c(5031,5032,5049)=6;c(5012,5029)=7;c(5071,5201,5211,5099,5082)=8;c(5161,5172,5189)=9;c(5052,5069)=10;c(6011,6022,6039)=11;
+                           c(6062,6079)=12;c(6042,6059,6081)=13;c(7041,7052,7069)=14;c(7102,7119)=15;c(7011,7022,7039)=16;c(7071,7082,7099)=17;c(8041,8051,8061,8071,8081,8092,8171,8181,8191,8109,8201)=18;
+                           c(8112,8129)=19;c(8131,8142,8159)=20;c(8011,8161,8022,8039)=21;c(9031,9071,9042,9059)=22;c(9012,9029,9061)=23;c(10041,10052,10069)=24;c(10071,10082,10099)=25;
+                           c(10102,10119)=26;else=NA")
+
+
+BasePer$Provincia= ordered(BasePer$Provincia,levels= c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26),                                                      
+                           labels= c("01: PROVINCIA DE ELQUI",
+                                     "02: PROVINCIA DE CHOAPA",
+                                     "03 : PROVINCIA DE LIMARÍ",
+                                     "04 : PROVINCIA DE VALPARAÍSO",
+                                     "05 : PROVINCIA DE MARGA MARGA",
+                                     "06 : PROVINCIA DE LOS ANDES",
+                                     "07 : PROVINCIA DE PETORCA",
+                                     "08 : PROVINCIA DE QUILLOTA",
+                                     "09 : PROVINCIA DE SAN ANTONIO",
+                                     "10 : PROVINCIA DE SAN FELIPE",
+                                     "11 : PROVINCIA DE CACHAPOAL",
+                                     "12 : PROVINCIA DE CARDENAL CARO",
+                                     "13 : PROVINCIA DE COLCHAGUA",
+                                     "14 : PROVINCIA DE TALCA",
+                                     "15 : PROVINCIA DE CAUQUENES",
+                                     "16 : PROVINCIA DE CURICÓ",
+                                     "17 : PROVINCIA DE LINARES",
+                                     "18 : PROVINCIA DE CONCEPCIÓN",
+                                     "19 : PROVINCIA DE ARAUCO",
+                                     "20 : PROVINCIA DE BIOBÍO",
+                                     "21 : PROVINCIA DE ÑUBLE",
+                                     "22 : PROVINCIA DE CAUTÍN",
+                                     "23 : PROVINCIA DE MALLECO",
+                                     "24 : PROVINCIA DE OSORNO",
+                                     "25 : PROVINCIA DE LLANQUIHUE",
+                                     "26 : PROVINCIAS DE CHILOÉ - PALENA"))
+
+
+
+BasePer$Cda = Recode(BasePer$ESTRATO,"c(15011)=1;c(1051)=2;c(1021)=3;c(2011)=4;c(2021)=5;c(3021)=6;c(3061)=7;c(4011)=8;c(4021)=9;c(4051)=10;c(5101)=11;
+                     c(5111,5221)=12;c(5161)=13;13011:13321=14;c(13351,13381,13461)=14;c(6011)=15;c(6081)=16;c(7011)=17;c(7041)=18;
+                     c(7071)=19;c(8011,8161)=20;c(8041,8171,8181)=21;c(8051,8191)=22;c(8071)=23;c(8081)=24;c(8131)=25;
+                     c(9061)=26;c(9031)=27;c(14011)=28;
+                     c(10041)=29;c(10071)=30;c(11011)=31;c(11041)=32;c(12011)=33;else=NA" )
+
+
+BasePer$Cda= ordered(BasePer$Cda,levels= c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33),                                                      
+                     labels= c('01 = ARICA',
+                               '02 = ALTO HOSPICIO',
+                               '03 = IQUIQUE',
+                               '04 = ANTOFAGASTA',
+                               '05 = CALAMA',
+                               '06 = COPIAPÓ',
+                               '07 = VALLENAR',
+                               '08 = COQUIMBO',
+                               '09 = LA SERENA',
+                               '10 =OVALLE',
+                               '11 =VALPARAÍSO',
+                               '12 = VIÑA DEL MAR/ (1)',
+                               '13 = SAN ANTONIO',
+                               '14 = GRAN SANTIAGO',
+                               '15 = RANCAGUA',
+                               '16 = SAN FERNANDO',
+                               '17 = CURICÓ',
+                               '18 = TALCA',
+                               '19 = LINARES',
+                               '20 = CHILLÁN/ (2)',
+                               '21 = CONCEPCIÓN / (3)',
+                               '22 = TALCAHUANO / (4)',
+                               '23 = LOTA',
+                               '24 = CORONEL',
+                               '25 = LOS ÁNGELES',
+                               '26 = ANGOL',
+                               '27 = TEMUCO',
+                               '28 = VALDIVIA',
+                               '29 = OSORNO',
+                               '30 = PUERTO MONTT',
+                               '31 = COYHAIQUE',
+                               '32 = PUERTO AYSÉN',
+                               '33 = PUNTA ARENAS'))
+
+
+BasePer$GRUPO_EDAD= ordered(BasePer$GRUPO_EDAD,levels= c(0,1,2,3,4,5,6,7),
+                            labels= c("00: Menos de 15 años",
+                                      "01: 15 - 24",
+                                      "02: 25 - 29",
+                                      "03: 30 - 34",
+                                      "04: 35 - 44",
+                                      "05: 45 - 54",
+                                      "06: 55 - 64",
+                                      "07: 65 y más"))
+
+BasePer$CINE= ordered(BasePer$CINE,levels= c(1,2,3,4,5,6,7,8,9,999),
+                      labels= c("01: Nunca Estudió",
+                                "02: Educación Preescolar",
+                                "03: Educación Primaria (Nivel 1)",
+                                "04: Educación Primaria (Nivel 2)",
+                                "05: Educación Secundaria",
+                                "06: Educación Técnica (Ed. Superior no Universitaria)",
+                                "07: Educación Universitaria",
+                                "08: Postítulo y Maestría",
+                                "09: Doctorado",
+                                "99: Nivel ignorado"))
+
+BasePer$Grupo_CISE = Recode (BasePer$CISE,"c(3,4)=1;c(5,6)=2;else=NA")
+
+BasePer$Excluye_ServDom = Recode(BasePer$CISE,"c(5,6)=NA;NA=NA;else=1")
+
+BasePer$OcupDependiente = Recode(BasePer$CISE,"c(3,4,5,6)=1;NA=NA;else=0")
+
+BasePer$OcupAsalariado = Recode(BasePer$CISE,"c(3,4)=1;NA=NA;else=0")
+
+BasePer$CuentaPropia = Recode(BasePer$CISE,"c(2)=1;NA=NA;else=0")
+
+BasePer$CISE= ordered(BasePer$CISE,levels= c(0,1,2,3,4,5,6,7),   # Los nombres 03 y 06 son para Total Asalariados y Total Personal de Servicio Doméstico
+                      labels= c("00: No corresponde",
+                                "01: Empleador",
+                                "02: Cuenta Propia",
+                                "04: Sector Privado ",
+                                "05: Sector Público",
+                                "07: Puertas Afuera",
+                                "08: Puertas Adentro",
+                                "09: Familiar no Remunerado"))
+
+BasePer$Grupo_CISE= ordered(BasePer$Grupo_CISE,levels= c(1,2),
+                            labels= c("03: Total Asalariados",
+                                      "06: Total Personal de Servicio Doméstico"))
+
+BasePer$B14_2_REV3N= ordered(BasePer$B14_2_REV3N,levels= c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),
+                             labels= c("01: Agricultura, ganadería, caza y silvicultura",
+                                       "02: Pesca",
+                                       "03: Explotación de minas y canteras",
+                                       "04: Industria manufacturera",
+                                       "05: Suministro de electricidad, gas y agua",
+                                       "06: Construcción",
+                                       "07: Comercio",
+                                       "08: Hoteles y restaurantes",
+                                       "09: Transporte, almacenamiento y comunicaciones",
+                                       "10: Intermediación financiera",
+                                       "11: Actividades inmobiliarias, empresariales y de alquiler",
+                                       "12: Administración pública",
+                                       "13: Enseñanza",
+                                       "14: Servicios sociales y de salud",
+                                       "15: Otras actividades de servicios comunitarios, sociales y personales",
+                                       "16: Hogares privados con servicio doméstico",
+                                       "17: Organizaciones y órganos extraterritoriales"))
+
+BasePer$B1_1_REV4= ordered(BasePer$B1_1_REV4,levels= c(1,2,3,4,5,6,7,8,9,10),
+                           labels= c("01: Miembros del poder ejecutivo y de los cuerpos legislativos y personal directivo de la administración pública y de empresas",
+                                     "02: Profesionales científicos e intelectuales",
+                                     "03: Técnicos y profesionales de nivel medio",
+                                     "04: Empleados de oficina",
+                                     "05: Trabajadores de los servicios y vendedores de comercios y mercados",
+                                     "06: Agricultores y trabajadores calificados agropecuarios y pesqueros",
+                                     "07: Oficiales, operarios y artesanos de artes mecánicas y de otros oficios",
+                                     "08: Operadores de instalaciones y máquinas y montadores",
+                                     "09: Trabajadores no calificados",
+                                     "10: Otros no identificados"))
+
+
+BasePer$HABITUALES_TRAMOS= ordered(BasePer$HABITUALES_TRAMOS,levels= c(1,2,3,4,5,6,7,8),
+                                   labels= c("00: Ocupados con cero horas trabajadas",
+                                             "01: 1 - 30",
+                                             "02: 31 - 44",
+                                             "03: 45",
+                                             "04: 46 - 50",
+                                             "05: 51 - 60",
+                                             "06: 61 y más hrs",
+                                             "07: Sin información"))
+
+BasePer$B15_1= ordered(BasePer$B15_1,levels= c(1,2,3,4,5),
+                       labels= c("01: Menos de 5",
+                                 "02: De 5 a 10 personas",
+                                 "03: Entre 11 y 49",
+                                 "04: Entre 50 y 199",
+                                 "05: 200 y más personas"))
+
+BasePer$TRAM_PL= ordered(BasePer$TRAM_PL,levels= c(1,2,3,4),
+                         labels= c("01: 0",
+                                   "02: 1 a 4",
+                                   "03: 5 y 6",
+                                   "04: 7"))
+
+BasePer$B8= ordered(BasePer$B8,levels= c(1,2),
+                    labels= c("01: Contrato escrito",
+                              "02: Acuerdo de palabra"))
+
+BasePer$ContratoDefinido = Recode (BasePer$B9,"1=1;else=NA")
+
+BasePer$B9= ordered(BasePer$B9,levels= c(2,1), # Está ivertido el código
+                    labels= c("01: Contrato Indefinido",
+                              "02: Contrato Definido"))
+
+BasePer$B10= ordered(BasePer$B10,levels= c(1,2,3,4,5,6),
+                     labels= c("01: Limitado a la temporada",
+                               "02: Por obra, faena, proyecto o actividad",
+                               "03: Limitado a menos de 3 meses",
+                               "04: Renovable una vez al año",
+                               "05: Por reemplazo",
+                               "06: No sabe"))
+
+BasePer$B11= ordered(BasePer$B11,levels= c(1,2,3,4,5),
+                     labels= c("01: Boleta de honorarios",
+                               "02: Liquidación de sueldo",
+                               "03: Entrega un comprobante o recibo",
+                               "04: No recibe ni entrega comprobante",
+                               "05: Entrega boleta o factura"))
+
+BasePer$B12= ordered(BasePer$B12,levels= c(1,2,3,4),
+                     labels= c("01: Directamente con la empresa en donde trabaja",
+                               "02: Con un contratista o subcontratista de bienes o servicios",
+                               "03: Con una empresa de servicios temporales o suministradoras de trabajadores",
+                               "04: Con un enganchador"))
+
+BasePer$B16= ordered(BasePer$B16,levels= c(1,2,3,4,5,6,7,8,9),
+                     labels= c("01: En instalaciones u oficina del cliente o empleador",
+                               "02: En la casa del empleador o cliente",
+                               "03: En instalaciones u oficinas propias o arrendadas",
+                               "04: En la oficina, local, taller o fábrica, anexo a su hogar (en el mismo predio)",
+                               "05: En su propio hogar",
+                               "06: En la calle o vía pública",
+                               "07: En obras de construcción, mineras o similares",
+                               "08: En un predio agrícola o espacio marítimo o aéreo ",
+                               "09: Otros lugares "))
+
+BasePer$B14CAENES= ordered(BasePer$B14_1_REV4CL_CAENES,levels= c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21),
+                           labels= c("01: Agricultura, ganadería, silvicultura y pesca",
+                                     "02: Explotación de minas y canteras",
+                                     "03: Industrias manufactureras",
+                                     "04: Suministro de electricidad, gas, vapor y aire acondicionado",
+                                     "05: Suministro de agua; evacuación de aguas residuales, gestión de desechos y descontaminación",
+                                     "06: Construcción",
+                                     "07: Comercio al por mayor y al por menor; reparación de vehículos automotores y motocicletas",
+                                     "08: Transporte y almacenamiento",
+                                     "09: Actividades de alojamiento y de servicio de comidas",
+                                     "10: Información y comunicaciones",
+                                     "11: Actividades financieras y de seguros",
+                                     "12: Actividades inmobiliarias",
+                                     "13: Actividades profesionales, científicas y técnicas",
+                                     "14: Actividades de servicios administrativos y de apoyo",
+                                     "15: Administración pública y defensa; planes de seguridad social de afiliación obligatoria",
+                                     "16: Enseñanza",
+                                     "17: Actividades de atención de la salud humana y de asistencia social",
+                                     "18: Actividades artísticas, de entretenimiento y recreativas",
+                                     "19: Otras actividades de servicios",
+                                     "20: Actividades de los hogares como empleadores; actividades no diferenciadas de los hogares como productores de bienes y servicios para uso propio",
+                                     "21: Actividades de organizaciones y órganos extraterritoriales"))
+
+BasePer$TIM= ordered(BasePer$TIM,levels= c(1,2,3,4,5,6,7),
+                     labels= c("01: 0 - $207.288",
+                               "02: $207.289 - $414.576",
+                               "03: $414.577 - $829.152",
+                               "04: $829.153 - $1.243.728",
+                               "05: $1.243.729 - $1.658.304",
+                               "06: $1.658.305 - $2.072.880",
+                               "07: $2.072.881 y más"))
+
+
+##########################################
+#   DEFINE MACRO PARA EXPORTAR A EXCEL   #
+##########################################
+
+SaveExcel = defmacro(ruta, sheet, resultado,
+                     expr = {
+                       workbook = loadWorkbook(ruta, create = TRUE) #Nuevo workbook (Si no existe lo crea)
+                       createSheet(workbook, name = sheet)          #Crea la hoja en workbook (si no existe)
+                       clearSheet(workbook, sheet = sheet)          #Limpia la hoja en workbook (si existe)
+                       writeWorksheet(workbook, resultado, sheet = sheet, startRow = 1, header = TRUE, rownames = 1) #Escribe en la hoja
+                       saveWorkbook(workbook)})                     #Guarda cambios en el workbook
+
+
+###############################
+#   FILTRA BASE PARA PRUEBAS  #
+###############################
+
+# BasePer=BasePer[BasePer$CSE_ESPECIFICO %in% 1:7 & BasePer$OCUP_REF==1,]
+
+#################################
+#   DEFINE EL DISENO COMPLEJO   #
+#################################
+
+# Muestreo ESTRATIFICADO por conglomerados
+# Metodo del último conglomeado
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Define Diseño Complejo",Hora_Inicio=Sys.time()))
+
+BasePer$Persona=1
+
+Dc.BasePer=svydesign(id=~ID_DIRECTORIO, # Etiquetas UPM
+                     strata=~ESTRATO, #Estratos
+                     check.strata=TRUE, # Comprueba que los clUsteres estan anidados en los estratos
+                     weights=~FACT_PER, # Ponderador
+                     data=BasePer)
+
+options(survey.lonely.psu="remove") #En los estratos que tienen solo un conglomerado se asume varianza cero
+
+
+##################################
+#   DEFINE EL DISENO REPLICADO   #
+##################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Define Diseño Replicado",Hora_Inicio=Sys.time()))
+
+#memory.limit(size = 8000)
+
+set.seed(234262762)
+SB2K = as.svrepdesign(Dc.BasePer, type = "subbootstrap", replicates=replicas)
+
+
+##############################################################
+#                      CUADROS 06 Y 07                       #
+#    DISTRIBUCIÓN DE LOS OCUPADOS Y OCUPADOS DEPENDIENTES    #
+#           SEGÚN TRAMOS DE SUELDOS MÍNIMOS NETOS            #
+##############################################################
+
+#######################################################################
+#   CUADRO 06: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN   #
+#######################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 06: Nro. de Observaciones",Hora_Inicio=Sys.time()))
+
+Macro.Obs = defmacro(tabla, by, clase, dc, nivel,
+                     expr = {tabla = svyby(~ING_T_P, ~by, dc, unwtd.count,
+                                           vartype=c("cvpct"), keep.var=FALSE, verbose=FALSE, keep.names=TRUE,
+                                           drop.empty.groups=FALSE, na.rm.by=FALSE, na.rm.all=FALSE)
+                     tabla$Clase=clase
+                     setnames(tabla, nivel, "Nivel")})
+
+Macro.Obs.06y07= defmacro(dc, tabla2, prefix, Nivel_Total,
+                          expr={
+                            Macro.Obs(tabla=t1, by=Persona, clase='TRAMOS DE SUELDOS MÍNIMOS NETOS', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t2, by=TIM, clase='TRAMOS DE SUELDOS MÍNIMOS NETOS', dc=dc, nivel="TIM")
+                            
+                            tabla2 =rbind(t1,t2)
+                            setnames(tabla2, "statistic", prefix)
+                            tabla2$Nivel = as(tabla2$Nivel,"character")
+                            tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                            rm(t1,t2)})     
+
+Macro.Obs.06y07(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla2=Obs.Ambos.C06, prefix="Ambos_Obs", Nivel_Total="00: Ocupados")
+Macro.Obs.06y07(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla2=Obs.Hombres.C06, prefix="Hombre_Obs", Nivel_Total="00: Ocupados")
+Macro.Obs.06y07(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla2=Obs.Mujeres.C06, prefix="Mujer_Obs", Nivel_Total="00: Ocupados")
+
+
+###############################
+#  CUADRO 06: TOTAL OCUPADOS  #
+###############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 06: Ocupados",Hora_Inicio=Sys.time()))
+
+Macro.svyby = defmacro(tabla, var, estimacion, by, clase, dc, nivel,
+                       expr = {tabla = svyby(~var, ~by, dc, estimacion,
+                                             vartype=c("cvpct"), keep.var=TRUE, verbose=FALSE, keep.names=TRUE,
+                                             drop.empty.groups=FALSE, na.rm.by=FALSE, na.rm.all=FALSE)
+                       tabla$Clase=clase
+                       setnames(tabla, nivel, "Nivel")})
+
+MacroEstimar.06= defmacro(var, tx_var, estimacion, dc, tabla2, prefix, Nivel_Total,
+                          expr={
+                            Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona, clase='TRAMOS DE SUELDOS MÍNIMOS NETOS', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=TIM, clase='TRAMOS DE SUELDOS MÍNIMOS NETOS', dc=dc, nivel="TIM")
+                            
+                            tabla2 =rbind(t1,t2)
+                            setnames(tabla2, tx_var, prefix)
+                            setnames(tabla2, "cv%", prefix%s+%"_CV_Pct")
+                            tabla2$Nivel = as(tabla2$Nivel,"character")
+                            tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                            rm(t1,t2)})
+
+MacroEstimar.06(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla2=Oc.Ambos.C06, prefix="Ambos_Oc", Nivel_Total="00: Ocupados")
+MacroEstimar.06(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla2=Oc.Hombres.C06, prefix="Hombre_Oc", Nivel_Total="00: Ocupados")
+MacroEstimar.06(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla2=Oc.Mujeres.C06, prefix="Mujer_Oc", Nivel_Total="00: Ocupados")
+
+
+############################
+#  CUADRO 06: CONSOLIDADO  #
+############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 06: Consolida",Hora_Inicio=Sys.time()))
+
+Cuadro_06 = Reduce(merge.data.frame, list(Obs.Ambos.C06, Obs.Mujeres.C06, Obs.Hombres.C06, Oc.Ambos.C06, Oc.Mujeres.C06, Oc.Hombres.C06))
+
+Cuadro_06$Cuadro="Cuadro 6"
+
+rm(Obs.Ambos.C06, Obs.Mujeres.C06, Obs.Hombres.C06, Oc.Ambos.C06, Oc.Mujeres.C06, Oc.Hombres.C06)
+
+gc(verbose=FALSE,reset=FALSE)
+
+
+#######################################################################
+#   CUADRO 07: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN   #
+#######################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 07: Nro. de Observaciones",Hora_Inicio=Sys.time()))
+
+
+Macro.Obs.06y07(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Obs.Ambos.C07, prefix="Ambos_Obs", Nivel_Total="00: Ocupados Dependientes")
+Macro.Obs.06y07(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Obs.Hombres.C07, prefix="Hombre_Obs", Nivel_Total="00: Ocupados Dependientes")
+Macro.Obs.06y07(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Obs.Mujeres.C07, prefix="Mujer_Obs", Nivel_Total="00: Ocupados Dependientes")
+
+
+###############################
+#  CUADRO 07: TOTAL OCUPADOS  #
+###############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 07: Ocupados",Hora_Inicio=Sys.time()))
+
+MacroEstimar.06(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Oc.Ambos.C07, prefix="Ambos_Oc", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.06(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Oc.Hombres.C07, prefix="Hombre_Oc", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.06(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Oc.Mujeres.C07, prefix="Mujer_Oc", Nivel_Total="00: Ocupados Dependientes")
+
+
+############################
+#  CUADRO 07: CONSOLIDADO  #
+############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 07: Consolida",Hora_Inicio=Sys.time()))
+
+Cuadro_07 = Reduce(merge.data.frame, list(Obs.Ambos.C07, Obs.Mujeres.C07, Obs.Hombres.C07, Oc.Ambos.C07, Oc.Mujeres.C07, Oc.Hombres.C07))
+
+Cuadro_07$Cuadro="Cuadro 7"
+
+rm(Obs.Ambos.C07, Obs.Mujeres.C07, Obs.Hombres.C07, Oc.Ambos.C07, Oc.Mujeres.C07, Oc.Hombres.C07)
+
+gc(verbose=FALSE,reset=FALSE)
+
+
+##########################################
+#  CUADROS 06 Y 07: CONSOLIDA Y EXPORTA  #
+##########################################
+
+Cuadro_06y07 = rbind(Cuadro_06,Cuadro_07)
+
+Cuadro_06y07 = select(Cuadro_06y07,Cuadro,Clase,Nivel,Ambos_Obs,Mujer_Obs,Hombre_Obs,Ambos_Oc,Mujer_Oc,Hombre_Oc,Ambos_Oc_CV_Pct,Mujer_Oc_CV_Pct,Hombre_Oc_CV_Pct)
+
+SaveExcel(ruta=Carpeta.Resultados%s+%"Cuadro_06y07.xlsx", sheet="CUADRO 6 Y 7", resultado=Cuadro_06y07)
+
+
+#####################################################################
+#                            CUADRO 10                              #
+#       INGRESO MEDIO Y MEDIANO MENSUAL DE OCUPADOS POR SEXO        #
+#   SEGÚN EDAD, NIVEL EDUCACIONAL Y CARACTERÍSTICAS OCUPACIONALES   #
+#####################################################################
+
+
+#######################################################################
+#   CUADRO 10: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN   #
+#######################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 10: Nro. de Observaciones",Hora_Inicio=Sys.time()))
+
+Macro.Obs.10y11= defmacro(dc, tabla2, prefix, Nivel_Total,
+                          expr={
+                            Macro.Obs(tabla=t1, by=Persona, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t2, by=GRUPO_EDAD, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.Obs(tabla=t3, by=Persona, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t4, by=CINE, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.Obs(tabla=t5, by=Persona, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t6, by=Grupo_CISE, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Grupo_CISE")
+                            Macro.Obs(tabla=t7, by=CISE, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="CISE")
+                            
+                            Macro.Obs(tabla=t8, by=Persona, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t9, by=B14CAENES, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.Obs(tabla=t10, by=Persona, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t11, by=B1_1_REV4, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.Obs(tabla=t12, by=Persona, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t13, by=HABITUALES_TRAMOS, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="HABITUALES_TRAMOS")
+                            
+                            Macro.Obs(tabla=t14, by=Excluye_ServDom, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="Excluye_ServDom")
+                            Macro.Obs(tabla=t15, by=B15_1, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="B15_1")
+                            
+                            tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)
+                            tabla.auxi$REGION = "País"
+                            
+                            Macro.Obs(tabla=t1, by=Persona+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t2, by=GRUPO_EDAD+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.Obs(tabla=t3, by=Persona+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t4, by=CINE+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.Obs(tabla=t5, by=Persona+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t6, by=Grupo_CISE+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Grupo_CISE")
+                            Macro.Obs(tabla=t7, by=CISE+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="CISE")
+                            
+                            Macro.Obs(tabla=t8, by=Persona+REGION, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t9, by=B14CAENES+REGION, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.Obs(tabla=t10, by=Persona+REGION, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t11, by=B1_1_REV4+REGION, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.Obs(tabla=t12, by=Persona+REGION, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t13, by=HABITUALES_TRAMOS+REGION, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="HABITUALES_TRAMOS")
+                            
+                            Macro.Obs(tabla=t14, by=Excluye_ServDom+REGION, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="Excluye_ServDom")
+                            Macro.Obs(tabla=t15, by=B15_1+REGION, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="B15_1")
+                            
+                            tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)
+                            
+                            setnames(tabla2, "statistic", prefix)
+                            setnames(tabla2, "REGION", "Región")
+                            
+                            tabla2$Nivel = as(tabla2$Nivel,"character")
+                            tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                            
+                            rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)})                         
+
+Macro.Obs.10y11(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla2=Obs.Ambos.C10, prefix="Ambos_Obs", Nivel_Total="00: Ocupados")
+Macro.Obs.10y11(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla2=Obs.Hombres.C10, prefix="Hombre_Obs", Nivel_Total="00: Ocupados")
+Macro.Obs.10y11(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla2=Obs.Mujeres.C10, prefix="Mujer_Obs", Nivel_Total="00: Ocupados")
+
+
+######################
+#  CUADRO 10: MEDIA  #
+######################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 10: Media",Hora_Inicio=Sys.time()))
+
+MacroEstimar.10= defmacro(var, tx_var, estimacion, dc, tabla2, prefix, Nivel_Total,
+                          expr={
+                            Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=GRUPO_EDAD, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.svyby(tabla=t3, var=var, estimacion=estimacion, by=Persona, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t4, var=var, estimacion=estimacion, by=CINE, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.svyby(tabla=t5, var=var, estimacion=estimacion, by=Persona, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t6, var=var, estimacion=estimacion, by=Grupo_CISE, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Grupo_CISE")
+                            Macro.svyby(tabla=t7, var=var, estimacion=estimacion, by=CISE, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="CISE")
+                            
+                            Macro.svyby(tabla=t8, var=var, estimacion=estimacion, by=Persona, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t9, var=var, estimacion=estimacion, by=B14CAENES, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.svyby(tabla=t10, var=var, estimacion=estimacion, by=Persona, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t11, var=var, estimacion=estimacion, by=B1_1_REV4, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.svyby(tabla=t12, var=var, estimacion=estimacion, by=Persona, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t13, var=var, estimacion=estimacion, by=HABITUALES_TRAMOS, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="HABITUALES_TRAMOS")
+                            
+                            Macro.svyby(tabla=t14, var=var, estimacion=estimacion, by=Excluye_ServDom, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="Excluye_ServDom")
+                            Macro.svyby(tabla=t15, var=var, estimacion=estimacion, by=B15_1, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="B15_1")
+                            
+                            tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)
+                            tabla.auxi$REGION = "País"
+                            
+                            Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=GRUPO_EDAD+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.svyby(tabla=t3, var=var, estimacion=estimacion, by=Persona+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t4, var=var, estimacion=estimacion, by=CINE+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.svyby(tabla=t5, var=var, estimacion=estimacion, by=Persona+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t6, var=var, estimacion=estimacion, by=Grupo_CISE+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Grupo_CISE")
+                            Macro.svyby(tabla=t7, var=var, estimacion=estimacion, by=CISE+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="CISE")
+                            
+                            Macro.svyby(tabla=t8, var=var, estimacion=estimacion, by=Persona+REGION, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t9, var=var, estimacion=estimacion, by=B14CAENES+REGION, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.svyby(tabla=t10, var=var, estimacion=estimacion, by=Persona+REGION, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t11, var=var, estimacion=estimacion, by=B1_1_REV4+REGION, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.svyby(tabla=t12, var=var, estimacion=estimacion, by=Persona+REGION, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t13, var=var, estimacion=estimacion, by=HABITUALES_TRAMOS+REGION, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="HABITUALES_TRAMOS")
+                            
+                            Macro.svyby(tabla=t14, var=var, estimacion=estimacion, by=Excluye_ServDom+REGION, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="Excluye_ServDom")
+                            Macro.svyby(tabla=t15, var=var, estimacion=estimacion, by=B15_1+REGION, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="B15_1")
+                            
+                            tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)
+                            
+                            setnames(tabla2, tx_var, prefix)
+                            setnames(tabla2, "cv%", prefix%s+%"_CV_Pct")
+                            setnames(tabla2, "REGION", "Región")
+                            
+                            tabla2$Nivel = as(tabla2$Nivel,"character")
+                            tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                            
+                            rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)})
+
+
+MacroEstimar.10(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla2=Me.Ambos.C10, prefix="Ambos_Me", Nivel_Total="00: Ocupados")
+MacroEstimar.10(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla2=Me.Hombres.C10, prefix="Hombre_Me", Nivel_Total="00: Ocupados")
+MacroEstimar.10(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla2=Me.Mujeres.C10, prefix="Mujer_Me", Nivel_Total="00: Ocupados")
+
+
+########################
+#  CUADRO 10: MEDIANA  #
+########################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 10: Mediana",Hora_Inicio=Sys.time()))
+
+Macro.svyquantile = defmacro(tabla, by, clase, dc, nivel,
+                             expr = {tabla = svyby(~ING_T_P, ~by, dc, svyquantile, quantiles=c(0.5), method="constant", interval.type="probability", ties="discrete",
+                                                   vartype=c("ci"), ci=TRUE, keep.var=TRUE, verbose=FALSE, keep.names=TRUE,
+                                                   drop.empty.groups=FALSE, na.rm.by=FALSE, na.rm.all=FALSE)
+                             tabla$Clase=clase
+                             setnames(tabla, nivel, "Nivel")})
+
+MacroMediana.10= defmacro(dc, tabla2, prefix, Nivel_Total,
+                          expr={
+                            Macro.svyquantile(tabla=t1, by=Persona, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t2, by=GRUPO_EDAD, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.svyquantile(tabla=t3, by=Persona, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t4, by=CINE, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.svyquantile(tabla=t5, by=Persona, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t6, by=Grupo_CISE, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Grupo_CISE")
+                            Macro.svyquantile(tabla=t7, by=CISE, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="CISE")
+                            
+                            Macro.svyquantile(tabla=t8, by=Persona, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t9, by=B14CAENES, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.svyquantile(tabla=t10, by=Persona, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t11, by=B1_1_REV4, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.svyquantile(tabla=t12, by=Persona, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t13, by=HABITUALES_TRAMOS, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="HABITUALES_TRAMOS")
+                            
+                            Macro.svyquantile(tabla=t14, by=Excluye_ServDom, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="Excluye_ServDom")
+                            Macro.svyquantile(tabla=t15, by=B15_1, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="B15_1")
+                            
+                            tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)
+                            tabla.auxi$REGION = "País"
+                            
+                            Macro.svyquantile(tabla=t1, by=Persona+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t2, by=GRUPO_EDAD+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.svyquantile(tabla=t3, by=Persona+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t4, by=CINE+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.svyquantile(tabla=t5, by=Persona+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t6, by=Grupo_CISE+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="Grupo_CISE")
+                            Macro.svyquantile(tabla=t7, by=CISE+REGION, clase='03: CATEGORÍA EN LA OCUPACIÓN', dc=dc, nivel="CISE")
+                            
+                            Macro.svyquantile(tabla=t8, by=Persona+REGION, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t9, by=B14CAENES+REGION, clase='04: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.svyquantile(tabla=t10, by=Persona+REGION, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t11, by=B1_1_REV4+REGION, clase='05: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.svyquantile(tabla=t12, by=Persona+REGION, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t13, by=HABITUALES_TRAMOS+REGION, clase='06: HORAS HABITUALES DE TRABAJO', dc=dc, nivel="HABITUALES_TRAMOS")
+                            
+                            Macro.svyquantile(tabla=t14, by=Excluye_ServDom+REGION, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="Excluye_ServDom")
+                            Macro.svyquantile(tabla=t15, by=B15_1+REGION, clase='07: TAMAÑO DE LA EMPRESA (Ex. Serv. Doméstico)', dc=dc, nivel="B15_1")
+                            
+                            tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)
+                            
+                            tabla2$cv = NULL
+                            setnames(tabla2, "V1", prefix)
+                            setnames(tabla2, "cv%", prefix%s+%"_CV_Pct")
+                            setnames(tabla2, "REGION", "Región")
+                            
+                            tabla2$Nivel = as(tabla2$Nivel,"character")
+                            tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                            
+                            rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15)})
+
+MacroMediana.10(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla2=Md.Ambos.C10, prefix="Ambos_Md", Nivel_Total="00: Ocupados")
+MacroMediana.10(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla2=Md.Hombres.C10, prefix="Hombre_Md", Nivel_Total="00: Ocupados")
+MacroMediana.10(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla2=Md.Mujeres.C10, prefix="Mujer_Md", Nivel_Total="00: Ocupados")
+
+
+###############################
+#  CUADRO 10: TOTAL OCUPADOS  #
+###############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 10: Ocupados",Hora_Inicio=Sys.time()))
+
+MacroEstimar.10(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla2=Oc.Ambos.C10, prefix="Ambos_Oc", Nivel_Total="00: Ocupados")
+MacroEstimar.10(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla2=Oc.Hombres.C10, prefix="Hombre_Oc", Nivel_Total="00: Ocupados")
+MacroEstimar.10(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla2=Oc.Mujeres.C10, prefix="Mujer_Oc", Nivel_Total="00: Ocupados")
+
+############################
+#  CUADRO 10: CONSOLIDADO  #
+############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 10: Consolida y Exporta",Hora_Inicio=Sys.time()))
+
+Cuadro_10 = Reduce(merge.data.frame, list(Obs.Ambos.C10, Obs.Mujeres.C10, Obs.Hombres.C10, Me.Ambos.C10, Me.Mujeres.C10, Me.Hombres.C10, Md.Ambos.C10, Md.Mujeres.C10, Md.Hombres.C10, Oc.Ambos.C10, Oc.Mujeres.C10, Oc.Hombres.C10))
+
+rm(Obs.Ambos.C10, Obs.Mujeres.C10, Obs.Hombres.C10, Me.Ambos.C10, Me.Mujeres.C10, Me.Hombres.C10, Md.Ambos.C10, Md.Mujeres.C10, Md.Hombres.C10, Oc.Ambos.C10, Oc.Mujeres.C10, Oc.Hombres.C10)
+
+gc(verbose=FALSE,reset=FALSE)
+
+Cuadro_10 = select(Cuadro_10,c(3,2,1,4,5,6,7,13,9,15,11,17,19,21,23,8,14,10,16,12,18,20,22,24))
+
+Cuadro_10=Cuadro_10[!Cuadro_10$Nivel %in% c('00: Menos de 15 años','00: No corresponde','00: Ocupados con cero horas trabajadas'),]
+
+setorder (Cuadro_10, -Región, Clase, Nivel)
+
+Elimina.Estimacion = defmacro (n_obs,estimacion,
+                               expr={tabla_auxi$estimacion = with(tabla_auxi, ifelse(n_obs<n_min, NA, estimacion))})
+
+Export.Cuadro = defmacro(cuadro, tx_cuadro, sheet, filtro,
+                         expr = {tabla_auxi=cuadro[cuadro$Región==filtro,]
+                         Elimina.Estimacion(Ambos_Obs,Ambos_Me)
+                         Elimina.Estimacion(Ambos_Obs,Ambos_Md)
+                         Elimina.Estimacion(Ambos_Obs,Ambos_Oc)
+                         Elimina.Estimacion(Ambos_Obs,Ambos_Me_CV_Pct)
+                         Elimina.Estimacion(Ambos_Obs,Ambos_Md_CV_Pct)
+                         Elimina.Estimacion(Ambos_Obs,Ambos_Oc_CV_Pct)
+                         Elimina.Estimacion(Mujer_Obs,Mujer_Me)
+                         Elimina.Estimacion(Mujer_Obs,Mujer_Md)
+                         Elimina.Estimacion(Mujer_Obs,Mujer_Oc)
+                         Elimina.Estimacion(Mujer_Obs,Mujer_Me_CV_Pct)
+                         Elimina.Estimacion(Mujer_Obs,Mujer_Md_CV_Pct)
+                         Elimina.Estimacion(Mujer_Obs,Mujer_Oc_CV_Pct)
+                         Elimina.Estimacion(Hombre_Obs,Hombre_Me)
+                         Elimina.Estimacion(Hombre_Obs,Hombre_Md)
+                         Elimina.Estimacion(Hombre_Obs,Hombre_Oc)
+                         Elimina.Estimacion(Hombre_Obs,Hombre_Me_CV_Pct)
+                         Elimina.Estimacion(Hombre_Obs,Hombre_Md_CV_Pct)
+                         Elimina.Estimacion(Hombre_Obs,Hombre_Oc_CV_Pct)
+                         SaveExcel(ruta=Carpeta.Resultados%s+%tx_cuadro%s+%".xlsx", sheet=sheet, resultado=tabla_auxi)
+                         rm(tabla_auxi)})
+
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 TP", "País")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 15", "15")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 01", "1")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 02", "2")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 03", "3")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 04", "4")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 05", "5")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 06", "6")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 07", "7")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 08", "8")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 09", "9")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 14", "14")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 10", "10")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 11", "11")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 12", "12")
+Export.Cuadro (Cuadro_10, "Cuadro_10", "CUADRO 10 13", "13")
+
+
+##################################################################################
+#                                    CUADRO 11                                   #
+#       INGRESO MEDIO Y MEDIANO MENSUAL DE OCUPADOS DEPENDIENTES POR SEXO        #
+#         SEGÚN EDAD, NIVEL EDUCACIONAL Y CARACTERÍSTICAS OCUPACIONALES          #
+##################################################################################
+
+
+#######################################################################
+#   CUADRO 11: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN   #
+#######################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11: Nro. de Observaciones",Hora_Inicio=Sys.time()))
+
+Macro.Obs.10y11(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Obs.Ambos.C11, prefix="Ambos_Obs", Nivel_Total="00: Ocupados Dependientes")
+Macro.Obs.10y11(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Obs.Hombres.C11, prefix="Hombre_Obs", Nivel_Total="00: Ocupados Dependientes")
+Macro.Obs.10y11(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Obs.Mujeres.C11, prefix="Mujer_Obs", Nivel_Total="00: Ocupados Dependientes")
+
+
+######################
+#  CUADRO 11: MEDIA  #
+######################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11: Media",Hora_Inicio=Sys.time()))
+
+MacroEstimar.10(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Me.Ambos.C11, prefix="Ambos_Me", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.10(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Me.Hombres.C11, prefix="Hombre_Me", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.10(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Me.Mujeres.C11, prefix="Mujer_Me", Nivel_Total="00: Ocupados Dependientes")
+
+
+########################
+#  CUADRO 11: MEDIANA  #
+########################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11: Mediana",Hora_Inicio=Sys.time()))
+
+MacroMediana.10(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Md.Ambos.C11, prefix="Ambos_Md", Nivel_Total="00: Ocupados Dependientes")
+MacroMediana.10(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Md.Hombres.C11, prefix="Hombre_Md", Nivel_Total="00: Ocupados Dependientes")
+MacroMediana.10(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Md.Mujeres.C11, prefix="Mujer_Md", Nivel_Total="00: Ocupados Dependientes")
+
+
+############################################
+#  CUADRO 11: TOTAL OCUPADOS DEPENDIENTES  #
+############################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11: Ocupados Dependientes",Hora_Inicio=Sys.time()))
+
+MacroEstimar.10(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Oc.Ambos.C11, prefix="Ambos_Oc", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.10(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Oc.Hombres.C11, prefix="Hombre_Oc", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.10(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Oc.Mujeres.C11, prefix="Mujer_Oc", Nivel_Total="00: Ocupados Dependientes")
+
+
+############################
+#  CUADRO 11: CONSOLIDADO  #
+############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11: Consolida y Exporta",Hora_Inicio=Sys.time()))
+
+Cuadro_11 = Reduce(merge.data.frame, list(Obs.Ambos.C11, Obs.Mujeres.C11, Obs.Hombres.C11, Me.Ambos.C11, Me.Mujeres.C11, Me.Hombres.C11, Md.Ambos.C11, Md.Mujeres.C11, Md.Hombres.C11, Oc.Ambos.C11, Oc.Mujeres.C11, Oc.Hombres.C11))
+
+rm(Obs.Ambos.C11, Obs.Mujeres.C11, Obs.Hombres.C11, Me.Ambos.C11, Me.Mujeres.C11, Me.Hombres.C11, Md.Ambos.C11, Md.Mujeres.C11, Md.Hombres.C11, Oc.Ambos.C11, Oc.Mujeres.C11, Oc.Hombres.C11)
+
+gc(verbose=FALSE,reset=FALSE)
+
+Cuadro_11 = select(Cuadro_11,c(3,2,1,4,5,6,7,13,9,15,11,17,19,21,23,8,14,10,16,12,18,20,22,24))
+
+Cuadro_11=Cuadro_11[!Cuadro_11$Nivel %in% c('00: Menos de 15 años','00: No corresponde','01: Empleador','02: Cuenta Propia','00: Ocupados con cero horas trabajadas','09: Familiar no Remunerado'),]
+
+setorder (Cuadro_11, -Región, Clase, Nivel)
+
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 TP", "País")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 15", "15")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 01", "1")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 02", "2")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 03", "3")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 04", "4")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 05", "5")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 06", "6")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 07", "7")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 08", "8")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 09", "9")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 14", "14")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 10", "10")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 11", "11")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 12", "12")
+Export.Cuadro (Cuadro_11, "Cuadro_11", "CUADRO 11 13", "13")
+
+
+#######################################################################
+#                            CUADRO 11A                               #
+#     INGRESO MEDIO Y MEDIANO MENSUAL DE LOS OCUPADOS ASALARIADOS     #
+#            SEGÚN CARACTERÍSTICAS DE CALIDAD DE EMPLEO               #
+#######################################################################
+
+
+#######################################################################
+#   CUADRO 11A: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN  #
+#######################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11A: Nro. de Observaciones",Hora_Inicio=Sys.time()))
+
+Macro.Obs.11Ay11B= defmacro(dc, tabla2, prefix, Nivel_Total,
+                            expr={                        
+                              Macro.Obs(tabla=t1, by=Persona, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="Persona")
+                              Macro.Obs(tabla=t2, by=TRAM_PL, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="TRAM_PL")
+                              
+                              Macro.Obs(tabla=t3, by=Persona, clase='02: TIPO DE CONTRATO', dc=dc, nivel="Persona")
+                              Macro.Obs(tabla=t4, by=B8, clase='02: TIPO DE CONTRATO', dc=dc, nivel="B8")
+                              
+                              Macro.Obs(tabla=t5, by=Persona, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="Persona")
+                              Macro.Obs(tabla=t6, by=B9, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="B9")
+                              
+                              Macro.Obs(tabla=t7, by=ContratoDefinido, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="ContratoDefinido")
+                              Macro.Obs(tabla=t8, by=B10, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="B10")
+                              
+                              Macro.Obs(tabla=t9, by=Persona, clase='05: FORMA DE PAGO', dc=dc, nivel="Persona")
+                              Macro.Obs(tabla=t10, by=B11, clase='05: FORMA DE PAGO', dc=dc, nivel="B11")
+                              
+                              Macro.Obs(tabla=t11, by=Excluye_ServDom, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="Excluye_ServDom")
+                              Macro.Obs(tabla=t12, by=B12, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="B12")
+                              
+                              Macro.Obs(tabla=t13, by=Excluye_ServDom, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="Excluye_ServDom")
+                              Macro.Obs(tabla=t14, by=B16, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                              
+                              
+                              tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)
+                              tabla.auxi$REGION = "País"
+                              
+                              
+                              Macro.Obs(tabla=t1, by=Persona+REGION, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="Persona")
+                              Macro.Obs(tabla=t2, by=TRAM_PL+REGION, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="TRAM_PL")
+                              
+                              Macro.Obs(tabla=t3, by=Persona+REGION, clase='02: TIPO DE CONTRATO', dc=dc, nivel="Persona")
+                              Macro.Obs(tabla=t4, by=B8+REGION, clase='02: TIPO DE CONTRATO', dc=dc, nivel="B8")
+                              
+                              Macro.Obs(tabla=t5, by=Persona+REGION, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="Persona")
+                              Macro.Obs(tabla=t6, by=B9+REGION, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="B9")
+                              
+                              Macro.Obs(tabla=t7, by=ContratoDefinido+REGION, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="ContratoDefinido")
+                              Macro.Obs(tabla=t8, by=B10+REGION, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="B10")
+                              
+                              Macro.Obs(tabla=t9, by=Persona+REGION, clase='05: FORMA DE PAGO', dc=dc, nivel="Persona")
+                              Macro.Obs(tabla=t10, by=B11+REGION, clase='05: FORMA DE PAGO', dc=dc, nivel="B11")
+                              
+                              Macro.Obs(tabla=t11, by=Excluye_ServDom+REGION, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="Excluye_ServDom")
+                              Macro.Obs(tabla=t12, by=B12+REGION, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="B12")
+                              
+                              Macro.Obs(tabla=t13, by=Excluye_ServDom+REGION, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="Excluye_ServDom")
+                              Macro.Obs(tabla=t14, by=B16+REGION, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                              
+                              tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)
+                              
+                              setnames(tabla2, "statistic", prefix)
+                              setnames(tabla2, "REGION", "Región")
+                              
+                              tabla2$Nivel = as(tabla2$Nivel,"character")
+                              tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                              
+                              rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)})
+
+Macro.Obs.11Ay11B(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1), tabla2=Obs.Ambos.C11A, prefix="Ambos_Obs", Nivel_Total="00: Asalariados")
+Macro.Obs.11Ay11B(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1 & SEXO==1), tabla2=Obs.Hombres.C11A, prefix="Hombre_Obs", Nivel_Total="00: Asalariados")
+Macro.Obs.11Ay11B(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1 & SEXO==2), tabla2=Obs.Mujeres.C11A, prefix="Mujer_Obs", Nivel_Total="00: Asalariados")
+
+
+######################
+#  CUADRO 11A: MEDIA  #
+######################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11A: Media",Hora_Inicio=Sys.time()))
+
+MacroEstimar.11A= defmacro(var, tx_var, estimacion, dc, tabla2, prefix, Nivel_Total,
+                           expr={
+                             Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="Persona")
+                             Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=TRAM_PL, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="TRAM_PL")
+                             
+                             Macro.svyby(tabla=t3, var=var, estimacion=estimacion, by=Persona, clase='02: TIPO DE CONTRATO', dc=dc, nivel="Persona")
+                             Macro.svyby(tabla=t4, var=var, estimacion=estimacion, by=B8, clase='02: TIPO DE CONTRATO', dc=dc, nivel="B8")
+                             
+                             Macro.svyby(tabla=t5, var=var, estimacion=estimacion, by=Persona, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="Persona")
+                             Macro.svyby(tabla=t6, var=var, estimacion=estimacion, by=B9, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="B9")
+                             
+                             Macro.svyby(tabla=t7, var=var, estimacion=estimacion, by=ContratoDefinido, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="ContratoDefinido")
+                             Macro.svyby(tabla=t8, var=var, estimacion=estimacion, by=B10, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="B10")
+                             
+                             Macro.svyby(tabla=t9, var=var, estimacion=estimacion, by=Persona, clase='05: FORMA DE PAGO', dc=dc, nivel="Persona")
+                             Macro.svyby(tabla=t10, var=var, estimacion=estimacion, by=B11, clase='05: FORMA DE PAGO', dc=dc, nivel="B11")
+                             
+                             Macro.svyby(tabla=t11, var=var, estimacion=estimacion, by=Excluye_ServDom, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="Excluye_ServDom")
+                             Macro.svyby(tabla=t12, var=var, estimacion=estimacion, by=B12, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="B12")
+                             
+                             Macro.svyby(tabla=t13, var=var, estimacion=estimacion, by=Excluye_ServDom, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="Excluye_ServDom")
+                             Macro.svyby(tabla=t14, var=var, estimacion=estimacion, by=B16, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                             
+                             tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)
+                             tabla.auxi$REGION = "País"
+                             
+                             Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona+REGION, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="Persona")
+                             Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=TRAM_PL+REGION, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="TRAM_PL")
+                             
+                             Macro.svyby(tabla=t3, var=var, estimacion=estimacion, by=Persona+REGION, clase='02: TIPO DE CONTRATO', dc=dc, nivel="Persona")
+                             Macro.svyby(tabla=t4, var=var, estimacion=estimacion, by=B8+REGION, clase='02: TIPO DE CONTRATO', dc=dc, nivel="B8")
+                             
+                             Macro.svyby(tabla=t5, var=var, estimacion=estimacion, by=Persona+REGION, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="Persona")
+                             Macro.svyby(tabla=t6, var=var, estimacion=estimacion, by=B9+REGION, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="B9")
+                             
+                             Macro.svyby(tabla=t7, var=var, estimacion=estimacion, by=ContratoDefinido+REGION, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="ContratoDefinido")
+                             Macro.svyby(tabla=t8, var=var, estimacion=estimacion, by=B10+REGION, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="B10")
+                             
+                             Macro.svyby(tabla=t9, var=var, estimacion=estimacion, by=Persona+REGION, clase='05: FORMA DE PAGO', dc=dc, nivel="Persona")
+                             Macro.svyby(tabla=t10, var=var, estimacion=estimacion, by=B11+REGION, clase='05: FORMA DE PAGO', dc=dc, nivel="B11")
+                             
+                             Macro.svyby(tabla=t11, var=var, estimacion=estimacion, by=Excluye_ServDom+REGION, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="Excluye_ServDom")
+                             Macro.svyby(tabla=t12, var=var, estimacion=estimacion, by=B12+REGION, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="B12")
+                             
+                             Macro.svyby(tabla=t13, var=var, estimacion=estimacion, by=Excluye_ServDom+REGION, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="Excluye_ServDom")
+                             Macro.svyby(tabla=t14, var=var, estimacion=estimacion, by=B16+REGION, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                             
+                             tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)
+                             
+                             setnames(tabla2, tx_var, prefix)
+                             setnames(tabla2, "cv%", prefix%s+%"_CV_Pct")
+                             setnames(tabla2, "REGION", "Región")
+                             
+                             tabla2$Nivel = as(tabla2$Nivel,"character")
+                             tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                             
+                             rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)})
+
+
+MacroEstimar.11A(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1), tabla2=Me.Ambos.C11A, prefix="Ambos_Me", Nivel_Total="00: Asalariados")
+MacroEstimar.11A(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1 & SEXO==1), tabla2=Me.Hombres.C11A, prefix="Hombre_Me", Nivel_Total="00: Asalariados")
+MacroEstimar.11A(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1 & SEXO==2), tabla2=Me.Mujeres.C11A, prefix="Mujer_Me", Nivel_Total="00: Asalariados")
+
+
+########################
+#  CUADRO 11A: MEDIANA  #
+########################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11A: Mediana",Hora_Inicio=Sys.time()))
+
+MacroMediana.11A= defmacro(dc, tabla2, prefix, Nivel_Total,
+                           expr={
+                             Macro.svyquantile(tabla=t1, by=Persona, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="Persona")
+                             Macro.svyquantile(tabla=t2, by=TRAM_PL, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="TRAM_PL")
+                             
+                             Macro.svyquantile(tabla=t3, by=Persona, clase='02: TIPO DE CONTRATO', dc=dc, nivel="Persona")
+                             Macro.svyquantile(tabla=t4, by=B8, clase='02: TIPO DE CONTRATO', dc=dc, nivel="B8")
+                             
+                             Macro.svyquantile(tabla=t5, by=Persona, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="Persona")
+                             Macro.svyquantile(tabla=t6, by=B9, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="B9")
+                             
+                             Macro.svyquantile(tabla=t7, by=ContratoDefinido, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="ContratoDefinido")
+                             Macro.svyquantile(tabla=t8, by=B10, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="B10")
+                             
+                             Macro.svyquantile(tabla=t9, by=Persona, clase='05: FORMA DE PAGO', dc=dc, nivel="Persona")
+                             Macro.svyquantile(tabla=t10, by=B11, clase='05: FORMA DE PAGO', dc=dc, nivel="B11")
+                             
+                             Macro.svyquantile(tabla=t11, by=Excluye_ServDom, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="Excluye_ServDom")
+                             Macro.svyquantile(tabla=t12, by=B12, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="B12")
+                             
+                             Macro.svyquantile(tabla=t13, by=Excluye_ServDom, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="Excluye_ServDom")
+                             Macro.svyquantile(tabla=t14, by=B16, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                             
+                             tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)
+                             tabla.auxi$REGION = "País"
+                             
+                             Macro.svyquantile(tabla=t1, by=Persona+REGION, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="Persona")
+                             Macro.svyquantile(tabla=t2, by=TRAM_PL+REGION, clase='01: TRAMOS NÚMERO TOTAL DE PRESTACIONES LABORALES', dc=dc, nivel="TRAM_PL")
+                             
+                             Macro.svyquantile(tabla=t3, by=Persona+REGION, clase='02: TIPO DE CONTRATO', dc=dc, nivel="Persona")
+                             Macro.svyquantile(tabla=t4, by=B8+REGION, clase='02: TIPO DE CONTRATO', dc=dc, nivel="B8")
+                             
+                             Macro.svyquantile(tabla=t5, by=Persona+REGION, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="Persona")
+                             Macro.svyquantile(tabla=t6, by=B9+REGION, clase='03: DURACIÓN DE CONTRATO', dc=dc, nivel="B9")
+                             
+                             Macro.svyquantile(tabla=t7, by=ContratoDefinido+REGION, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="ContratoDefinido")
+                             Macro.svyquantile(tabla=t8, by=B10+REGION, clase='04: TIPO DE CONTRATO DEFINIDO', dc=dc, nivel="B10")
+                             
+                             Macro.svyquantile(tabla=t9, by=Persona+REGION, clase='05: FORMA DE PAGO', dc=dc, nivel="Persona")
+                             Macro.svyquantile(tabla=t10, by=B11+REGION, clase='05: FORMA DE PAGO', dc=dc, nivel="B11")
+                             
+                             Macro.svyquantile(tabla=t11, by=Excluye_ServDom+REGION, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="Excluye_ServDom")
+                             Macro.svyquantile(tabla=t12, by=B12+REGION, clase='06: TIPO DE RELACIÓN DIRECTA O TRIANGULAR', dc=dc, nivel="B12")
+                             
+                             Macro.svyquantile(tabla=t13, by=Excluye_ServDom+REGION, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="Excluye_ServDom")
+                             Macro.svyquantile(tabla=t14, by=B16+REGION, clase='07: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                             
+                             tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)
+                             
+                             tabla2$cv = NULL
+                             setnames(tabla2, "V1", prefix)
+                             setnames(tabla2, "cv%", prefix%s+%"_CV_Pct")
+                             setnames(tabla2, "REGION", "Región")
+                             
+                             tabla2$Nivel = as(tabla2$Nivel,"character")
+                             tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                             
+                             rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14)})
+
+MacroMediana.11A(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1), tabla2=Md.Ambos.C11A, prefix="Ambos_Md", Nivel_Total="00: Asalariados")
+MacroMediana.11A(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1 & SEXO==1), tabla2=Md.Hombres.C11A, prefix="Hombre_Md", Nivel_Total="00: Asalariados")
+MacroMediana.11A(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1 & SEXO==2), tabla2=Md.Mujeres.C11A, prefix="Mujer_Md", Nivel_Total="00: Asalariados")
+
+
+###################################
+#  CUADRO 11A: TOTAL ASALARIADOS  #
+###################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11A: Asalariados",Hora_Inicio=Sys.time()))
+
+MacroEstimar.11A(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1), tabla2=Oc.Ambos.C11A, prefix="Ambos_Oc", Nivel_Total="00: Asalariados")
+MacroEstimar.11A(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1 & SEXO==1), tabla2=Oc.Hombres.C11A, prefix="Hombre_Oc", Nivel_Total="00: Asalariados")
+MacroEstimar.11A(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupAsalariado==1 & SEXO==2), tabla2=Oc.Mujeres.C11A, prefix="Mujer_Oc", Nivel_Total="00: Asalariados")
+
+
+#############################
+#  CUADRO 11A: CONSOLIDADO  #
+#############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11A: Consolida y Exporta",Hora_Inicio=Sys.time()))
+
+Cuadro_11A = Reduce(merge.data.frame, list(Obs.Ambos.C11A, Obs.Mujeres.C11A, Obs.Hombres.C11A, Me.Ambos.C11A, Me.Mujeres.C11A, Me.Hombres.C11A, Md.Ambos.C11A, Md.Mujeres.C11A, Md.Hombres.C11A, Oc.Ambos.C11A, Oc.Mujeres.C11A, Oc.Hombres.C11A))
+
+rm(Obs.Ambos.C11A, Obs.Mujeres.C11A, Obs.Hombres.C11A, Me.Ambos.C11A, Me.Mujeres.C11A, Me.Hombres.C11A, Md.Ambos.C11A, Md.Mujeres.C11A, Md.Hombres.C11A, Oc.Ambos.C11A, Oc.Mujeres.C11A, Oc.Hombres.C11A)
+
+gc(verbose=FALSE,reset=FALSE)
+
+Cuadro_11A = select(Cuadro_11A,c(3,2,1,4,5,6,7,13,9,15,11,17,19,21,23,8,14,10,16,12,18,20,22,24))
+
+setorder (Cuadro_11A, -Región, Clase, Nivel)
+
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (TP)", "País")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (15)", "15")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (1)", "1")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (2)", "2")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (3)", "3")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (4)", "4")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (5)", "5")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (6)", "6")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (7)", "7")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (8)", "8")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (9)", "9")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (14)", "14")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (10)", "10")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (11)", "11")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (12)", "12")
+Export.Cuadro (Cuadro_11A, "Cuadro_11A", "11 A Asalariados (13)", "13")
+
+
+#######################################################################
+#                            CUADRO 11B                               #
+#     INGRESO MEDIO Y MEDIANO MENSUAL DE LOS OCUPADOS DEPENDIENTES    #
+#            SEGÚN CARACTERÍSTICAS DE CALIDAD DE EMPLEO               #
+#######################################################################
+
+
+#######################################################################
+#   CUADRO 11B: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN  #
+#######################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11B: Nro. de Observaciones",Hora_Inicio=Sys.time()))
+
+Macro.Obs.11Ay11B(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Obs.Ambos.C11B, prefix="Ambos_Obs", Nivel_Total="00: Ocupados Dependientes")
+Macro.Obs.11Ay11B(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Obs.Hombres.C11B, prefix="Hombre_Obs", Nivel_Total="00: Ocupados Dependientes")
+Macro.Obs.11Ay11B(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Obs.Mujeres.C11B, prefix="Mujer_Obs", Nivel_Total="00: Ocupados Dependientes")
+
+
+######################
+#  CUADRO 11B: MEDIA  #
+######################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11B: Media",Hora_Inicio=Sys.time()))
+
+MacroEstimar.11A(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Me.Ambos.C11B, prefix="Ambos_Me", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.11A(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Me.Hombres.C11B, prefix="Hombre_Me", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.11A(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Me.Mujeres.C11B, prefix="Mujer_Me", Nivel_Total="00: Ocupados Dependientes")
+
+
+#########################
+#  CUADRO 11B: MEDIANA  #
+#########################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11B: Mediana",Hora_Inicio=Sys.time()))
+
+MacroMediana.11A(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Md.Ambos.C11B, prefix="Ambos_Md", Nivel_Total="00: Ocupados Dependientes")
+MacroMediana.11A(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Md.Hombres.C11B, prefix="Hombre_Md", Nivel_Total="00: Ocupados Dependientes")
+MacroMediana.11A(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Md.Mujeres.C11B, prefix="Mujer_Md", Nivel_Total="00: Ocupados Dependientes")
+
+
+####################################
+#  CUADRO 11B: TOTAL DEPENDIENTES  #
+####################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11B: Ocupados Dependientes",Hora_Inicio=Sys.time()))
+
+MacroEstimar.11A(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla2=Oc.Ambos.C11B, prefix="Ambos_Oc", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.11A(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla2=Oc.Hombres.C11B, prefix="Hombre_Oc", Nivel_Total="00: Ocupados Dependientes")
+MacroEstimar.11A(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla2=Oc.Mujeres.C11B, prefix="Mujer_Oc", Nivel_Total="00: Ocupados Dependientes")
+
+
+############################
+#  CUADRO 11B: CONSOLIDADO  #
+############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 11B: Consolida y Exporta",Hora_Inicio=Sys.time()))
+
+Cuadro_11B = Reduce(merge.data.frame, list(Obs.Ambos.C11B, Obs.Mujeres.C11B, Obs.Hombres.C11B, Me.Ambos.C11B, Me.Mujeres.C11B, Me.Hombres.C11B, Md.Ambos.C11B, Md.Mujeres.C11B, Md.Hombres.C11B, Oc.Ambos.C11B, Oc.Mujeres.C11B, Oc.Hombres.C11B))
+
+rm(Obs.Ambos.C11B, Obs.Mujeres.C11B, Obs.Hombres.C11B, Me.Ambos.C11B, Me.Mujeres.C11B, Me.Hombres.C11B, Md.Ambos.C11B, Md.Mujeres.C11B, Md.Hombres.C11B, Oc.Ambos.C11B, Oc.Mujeres.C11B, Oc.Hombres.C11B)
+
+gc(verbose=FALSE,reset=FALSE)
+
+Cuadro_11B = select(Cuadro_11B,c(3,2,1,4,5,6,7,13,9,15,11,17,19,21,23,8,14,10,16,12,18,20,22,24))
+
+setorder (Cuadro_11B, -Región, Clase, Nivel)
+
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (TP)", "País")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (15)", "15")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (1)", "1")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (2)", "2")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (3)", "3")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (4)", "4")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (5)", "5")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (6)", "6")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (7)", "7")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (8)", "8")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (9)", "9")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (14)", "14")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (10)", "10")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (11)", "11")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (12)", "12")
+Export.Cuadro (Cuadro_11B, "Cuadro_11B", "11 B Ocup.Dep (13)", "13")
+
+
+
+######################################################################################
+#                                       CUADRO 12                                    #
+#     INGRESO MEDIO Y MEDIANO MENSUAL DE LOS OCUPADOS POR CUENTA PROPIA POR SEXO,    #
+#            SEGÚN EDAD, NIVEL EDUCACIONAL Y CARACTERÍSTICAS OCUPACIONALES           #
+######################################################################################
+
+
+######################################################################
+#   CUADRO 12: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN  #
+######################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 12: Nro. de Observaciones",Hora_Inicio=Sys.time()))
+
+Macro.Obs.12= defmacro(dc, tabla2, prefix, Nivel_Total,
+                       expr={                        
+                         Macro.Obs(tabla=t1, by=Persona, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t2, by=GRUPO_EDAD, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                         
+                         Macro.Obs(tabla=t3, by=Persona, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t4, by=CINE, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                         
+                         Macro.Obs(tabla=t5, by=Persona, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t6, by=B14CAENES, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                         
+                         Macro.Obs(tabla=t7, by=Persona, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t8, by=B1_1_REV4, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                         
+                         Macro.Obs(tabla=t9, by=Persona, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t10, by=B16, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                         
+                         tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)
+                         tabla.auxi$REGION = "País"
+                         
+                         Macro.Obs(tabla=t1, by=Persona+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t2, by=GRUPO_EDAD+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                         
+                         Macro.Obs(tabla=t3, by=Persona+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t4, by=CINE+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                         
+                         Macro.Obs(tabla=t5, by=Persona+REGION, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t6, by=B14CAENES+REGION, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                         
+                         Macro.Obs(tabla=t7, by=Persona+REGION, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t8, by=B1_1_REV4+REGION, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                         
+                         Macro.Obs(tabla=t9, by=Persona+REGION, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="Persona")
+                         Macro.Obs(tabla=t10, by=B16+REGION, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                         
+                         tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)
+                         
+                         setnames(tabla2, "statistic", prefix)
+                         setnames(tabla2, "REGION", "Región")
+                         
+                         tabla2$Nivel = as(tabla2$Nivel,"character")
+                         tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                         
+                         rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)})
+
+Macro.Obs.12(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1), tabla2=Obs.Ambos.C12, prefix="Ambos_Obs", Nivel_Total="00: Ocupados Cta. Propia")
+Macro.Obs.12(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1 & SEXO==1), tabla2=Obs.Hombres.C12, prefix="Hombre_Obs", Nivel_Total="00: Ocupados Cta. Propia")
+Macro.Obs.12(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1 & SEXO==2), tabla2=Obs.Mujeres.C12, prefix="Mujer_Obs", Nivel_Total="00: Ocupados Cta. Propia")
+
+
+######################
+#  CUADRO 12: MEDIA  #
+######################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 12: Media",Hora_Inicio=Sys.time()))
+
+MacroEstimar.12= defmacro(var, tx_var, estimacion, dc, tabla2, prefix, Nivel_Total,
+                          expr={
+                            Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=GRUPO_EDAD, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.svyby(tabla=t3, var=var, estimacion=estimacion, by=Persona, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t4, var=var, estimacion=estimacion, by=CINE, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.svyby(tabla=t5, var=var, estimacion=estimacion, by=Persona, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t6, var=var, estimacion=estimacion, by=B14CAENES, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.svyby(tabla=t7, var=var, estimacion=estimacion, by=Persona, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t8, var=var, estimacion=estimacion, by=B1_1_REV4, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.svyby(tabla=t9, var=var, estimacion=estimacion, by=Persona, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t10, var=var, estimacion=estimacion, by=B16, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                            
+                            tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)
+                            tabla.auxi$REGION = "País"
+                            
+                            Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=GRUPO_EDAD+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.svyby(tabla=t3, var=var, estimacion=estimacion, by=Persona+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t4, var=var, estimacion=estimacion, by=CINE+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.svyby(tabla=t5, var=var, estimacion=estimacion, by=Persona+REGION, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t6, var=var, estimacion=estimacion, by=B14CAENES+REGION, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.svyby(tabla=t7, var=var, estimacion=estimacion, by=Persona+REGION, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t8, var=var, estimacion=estimacion, by=B1_1_REV4+REGION, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.svyby(tabla=t9, var=var, estimacion=estimacion, by=Persona+REGION, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.svyby(tabla=t10, var=var, estimacion=estimacion, by=B16+REGION, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                            
+                            tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)
+                            
+                            setnames(tabla2, tx_var, prefix)
+                            setnames(tabla2, "cv%", prefix%s+%"_CV_Pct")
+                            setnames(tabla2, "REGION", "Región")
+                            
+                            tabla2$Nivel = as(tabla2$Nivel,"character")
+                            tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                            
+                            rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)})
+
+
+MacroEstimar.12(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1), tabla2=Me.Ambos.C12, prefix="Ambos_Me", Nivel_Total="00: Ocupados Cta. Propia")
+MacroEstimar.12(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1 & SEXO==1), tabla2=Me.Hombres.C12, prefix="Hombre_Me", Nivel_Total="00: Ocupados Cta. Propia")
+MacroEstimar.12(var=ING_T_P, tx_var="ING_T_P", estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1 & SEXO==2), tabla2=Me.Mujeres.C12, prefix="Mujer_Me", Nivel_Total="00: Ocupados Cta. Propia")
+
+
+########################
+#  CUADRO 12: MEDIANA  #
+########################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 12: Mediana",Hora_Inicio=Sys.time()))
+
+MacroMediana.12= defmacro(dc, tabla2, prefix, Nivel_Total,
+                          expr={
+                            Macro.svyquantile(tabla=t1, by=Persona, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t2, by=GRUPO_EDAD, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.svyquantile(tabla=t3, by=Persona, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t4, by=CINE, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.svyquantile(tabla=t5, by=Persona, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t6, by=B14CAENES, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.svyquantile(tabla=t7, by=Persona, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t8, by=B1_1_REV4, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.svyquantile(tabla=t9, by=Persona, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t10, by=B16, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                            
+                            tabla.auxi=rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)
+                            tabla.auxi$REGION = "País"
+                            
+                            Macro.svyquantile(tabla=t1, by=Persona+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t2, by=GRUPO_EDAD+REGION, clase='01: GRUPOS DE EDAD', dc=dc, nivel="GRUPO_EDAD")
+                            
+                            Macro.svyquantile(tabla=t3, by=Persona+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t4, by=CINE+REGION, clase='02: NIVEL EDUCACIONAL', dc=dc, nivel="CINE")
+                            
+                            Macro.svyquantile(tabla=t5, by=Persona+REGION, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t6, by=B14CAENES+REGION, clase='03: RAMA DE ACTIVIDAD', dc=dc, nivel="B14CAENES")
+                            
+                            Macro.svyquantile(tabla=t7, by=Persona+REGION, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t8, by=B1_1_REV4+REGION, clase='04: GRUPOS DE OCUPACIÓN', dc=dc, nivel="B1_1_REV4")
+                            
+                            Macro.svyquantile(tabla=t9, by=Persona+REGION, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="Persona")
+                            Macro.svyquantile(tabla=t10, by=B16+REGION, clase='05: LUGAR DE TRABAJO', dc=dc, nivel="B16")
+                            
+                            tabla2 =rbind(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)
+                            
+                            tabla2$cv = NULL
+                            setnames(tabla2, "V1", prefix)
+                            setnames(tabla2, "cv%", prefix%s+%"_CV_Pct")
+                            setnames(tabla2, "REGION", "Región")
+                            
+                            tabla2$Nivel = as(tabla2$Nivel,"character")
+                            tabla2$Nivel[tabla2$Nivel==1] = Nivel_Total
+                            
+                            rm(tabla.auxi,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10)})
+
+MacroMediana.12(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1), tabla2=Md.Ambos.C12, prefix="Ambos_Md", Nivel_Total="00: Ocupados Cta. Propia")
+MacroMediana.12(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1 & SEXO==1), tabla2=Md.Hombres.C12, prefix="Hombre_Md", Nivel_Total="00: Ocupados Cta. Propia")
+MacroMediana.12(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1 & SEXO==2), tabla2=Md.Mujeres.C12, prefix="Mujer_Md", Nivel_Total="00: Ocupados Cta. Propia")
+
+
+#################################################
+#  CUADRO 12: TOTAL OCUPADOS POR CUENTA PROPIA  #
+#################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 12: Ocupados por Cuenta Propia",Hora_Inicio=Sys.time()))
+
+MacroEstimar.12(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1), tabla2=Oc.Ambos.C12, prefix="Ambos_Oc", Nivel_Total="00: Ocupados Cta. Propia")
+MacroEstimar.12(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1 & SEXO==1), tabla2=Oc.Hombres.C12, prefix="Hombre_Oc", Nivel_Total="00: Ocupados Cta. Propia")
+MacroEstimar.12(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & CuentaPropia==1 & SEXO==2), tabla2=Oc.Mujeres.C12, prefix="Mujer_Oc", Nivel_Total="00: Ocupados Cta. Propia")
+
+
+############################
+#  CUADRO 12: CONSOLIDADO  #
+############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 12: Consolida y Exporta",Hora_Inicio=Sys.time()))
+
+Cuadro_12 = Reduce(merge.data.frame, list(Obs.Ambos.C12, Obs.Mujeres.C12, Obs.Hombres.C12, Me.Ambos.C12, Me.Mujeres.C12, Me.Hombres.C12, Md.Ambos.C12, Md.Mujeres.C12, Md.Hombres.C12, Oc.Ambos.C12, Oc.Mujeres.C12, Oc.Hombres.C12))
+
+rm(Obs.Ambos.C12, Obs.Mujeres.C12, Obs.Hombres.C12, Me.Ambos.C12, Me.Mujeres.C12, Me.Hombres.C12, Md.Ambos.C12, Md.Mujeres.C12, Md.Hombres.C12, Oc.Ambos.C12, Oc.Mujeres.C12, Oc.Hombres.C12)
+
+gc(verbose=FALSE,reset=FALSE)
+
+Cuadro_12 = select(Cuadro_12,c(3,2,1,4,5,6,7,13,9,15,11,17,19,21,23,8,14,10,16,12,18,20,22,24))
+
+Cuadro_12=Cuadro_12[!Cuadro_12$Nivel %in% c('00: Menos de 15 años'),]
+
+setorder (Cuadro_12, -Región, Clase, Nivel)
+
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (TP)", "País")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (15)", "15")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (1)", "1")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (2)", "2")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (3)", "3")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (4)", "4")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (5)", "5")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (6)", "6")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (7)", "7")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (8)", "8")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (9)", "9")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (14)", "14")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (10)", "10")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (11)", "11")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (12)", "12")
+Export.Cuadro (Cuadro_12, "Cuadro_12", "12 cta Propia (13)", "13")
+
+
+#################################################################################
+#                                 CUADROS 08 Y 09                               #
+#    INGRESO MEDIO Y MEDIANO MENSUAL DE LOS OCUPADOS Y OCUPADOS DEPENDIENTES    #
+#                              POR SEXO SEGÚN REGIÓN                            #
+#################################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadros 8 y 9",Hora_Inicio=Sys.time()))
+
+Macro.C08yC09 = defmacro(Cuadro.In, Total, Cuadro.Out, Tx_Cuadro.Out,
+                         expr={Cuadro.Out=Cuadro.In[Cuadro.In$Clase %in% c("01: GRUPOS DE EDAD") & Cuadro.In$Nivel %in% c(Total),!(colnames(Cuadro.In) %in% c("Clase","Nivel"))]
+                         Cuadro.Out$Tx_Región= ordered(Cuadro.Out$Región, levels= c("País",15,1,2,3,4,5,6,7,8,9,14,10,11,12,13),
+                                                       labels= c("País",
+                                                                 "Región de Arica y Parinacota",
+                                                                 "Región de Tarapacá",
+                                                                 "Región de Antofagasta",
+                                                                 "Región de Atacama",
+                                                                 "Región de Coquimbo",
+                                                                 "Región de Valparaíso",
+                                                                 "Región del Libertador Gral. Bernardo O`Higgins",
+                                                                 "Región del Maule",
+                                                                 "Región del Biobío",
+                                                                 "Región de La Araucanía",
+                                                                 "Región de Los Ríos",
+                                                                 "Región de Los Lagos",
+                                                                 "Región de Aysén del Gral. Carlos Ibáñez del Campo",
+                                                                 "Región de Magallanes y Antártica Chilena",
+                                                                 "Región Metropolitana"))
+                         setorder (Cuadro.Out, Tx_Región)
+                         Cuadro.Out$Cuadro=Tx_Cuadro.Out
+                         Cuadro.Out = select(Cuadro.Out, Cuadro, Región, Tx_Región, everything())})
+
+Macro.C08yC09(Cuadro.In = Cuadro_10, Total="00: Ocupados", Cuadro.Out = Cuadro_08, Tx_Cuadro.Out = "Cuadro 8" )
+Macro.C08yC09(Cuadro.In = Cuadro_11, Total="00: Ocupados Dependientes", Cuadro.Out = Cuadro_09, Tx_Cuadro.Out = "Cuadro 9" )
+Cuadro_08y09 = rbind(Cuadro_08,Cuadro_09)
+
+SaveExcel(ruta=Carpeta.Resultados%s+%"Cuadro_08y09.xlsx", sheet="CUADRO 8 Y 9", resultado=Cuadro_08y09)
+
+
+
+#####################################################################
+#                         CUADRO 8a y 8b                            #
+#       INGRESO MEDIO Y MEDIANO MENSUAL DE OCUPADOS POR SEXO        #
+#                   Nivel Provincia y Ciudad                        #
+#####################################################################
+
+
+##########################################################################
+#   CUADRO 8a y 8b: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN   #
+##########################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 8a y 8b: Nro. de Observaciones Nivel Provincia y Ciudad",Hora_Inicio=Sys.time()))
+
+Macro.Obs.8ay8b= defmacro(dc, tabla, prefix, Nivel_Total,
+                          expr={
+                            Macro.Obs(tabla=t1, by=Persona, clase='01: Provincia', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t2, by=Provincia, clase='01: Provincia', dc=dc, nivel="Provincia")
+                            
+                            Macro.Obs(tabla=t3, by=Persona, clase='01: Ciudad', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t4, by=Cda, clase='01: Ciudad', dc=dc, nivel="Cda")
+                            
+                            tabla=rbind(t1,t2,t3,t4)
+                            
+                            
+                            setnames(tabla, "statistic", prefix)
+                            
+                            
+                            tabla$Nivel = as(tabla$Nivel,"character")
+                            tabla$Nivel[tabla$Nivel==1] = Nivel_Total})                         
+
+Macro.Obs.8ay8b(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla=Obs.Ambos.C8ay8b, prefix="Ambos_Obs", Nivel_Total="00: Ocupados")
+Macro.Obs.8ay8b(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla=Obs.Hombres.c8ay8b, prefix="Hombre_Obs", Nivel_Total="00: Ocupados")
+Macro.Obs.8ay8b(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla=Obs.Mujeres.C8ay8b, prefix="Mujer_Obs", Nivel_Total="00: Ocupados")
+
+
+#########################
+#  CUADRO 8a y 8b: MEDIA  #
+#########################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 8a y 8b: Media",Hora_Inicio=Sys.time()))
+
+MacroEstimar.8ay8b= defmacro(var, dc, tabla, tx_var, estimacion, prefix, Nivel_Total,
+                             expr={
+                               Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona, clase='01: Provincia', dc=dc, nivel="Persona")
+                               Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=Provincia, clase='01: Provincia', dc=dc, nivel="Provincia")
+                               
+                               Macro.svyby(tabla=t3, var=var, estimacion=estimacion, by=Persona, clase='01: Ciudad', dc=dc, nivel="Persona")
+                               Macro.svyby(tabla=t4, var=var, estimacion=estimacion, by=Cda, clase='01: Ciudad', dc=dc, nivel="Cda")
+                               
+                               tabla =rbind(t1,t2,t3,t4)
+                               
+                               setnames(tabla, tx_var, prefix)
+                               setnames(tabla, "cv%", prefix%s+%"_CV_Pct")
+                               
+                               
+                               tabla$Nivel = as(tabla$Nivel,"character")
+                               tabla$Nivel[tabla$Nivel==1] = Nivel_Total})
+
+
+MacroEstimar.8ay8b(var=ING_T_P, tx_var="ING_T_P",estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla=Me.Ambos.C8ay8b, prefix="Ambos_Me", Nivel_Total="00: Ocupados")
+MacroEstimar.8ay8b(var=ING_T_P, tx_var="ING_T_P",estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla=Me.Hombres.C8ay8b, prefix="Hombre_Me", Nivel_Total="00: Ocupados")
+MacroEstimar.8ay8b(var=ING_T_P, tx_var="ING_T_P",estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla=Me.Mujeres.C8ay8b, prefix="Mujer_Me", Nivel_Total="00: Ocupados")
+
+
+#############################
+#  CUADRO 8a y 8b: MEDIANA  #
+#############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 8a y 8b: Mediana",Hora_Inicio=Sys.time()))
+
+Macro.svyquantile = defmacro(tabla, by, clase, dc, nivel,
+                             expr = {tabla = svyby(~ING_T_P, ~by, dc, svyquantile, quantiles=c(0.5), method="constant", interval.type="probability", ties="discrete",
+                                                   vartype=c("ci"), ci=TRUE, keep.var=TRUE, verbose=FALSE, keep.names=TRUE,
+                                                   drop.empty.groups=FALSE, na.rm.by=FALSE, na.rm.all=FALSE)
+                             tabla$Clase=clase
+                             setnames(tabla, nivel, "Nivel")})
+
+MacroMediana.8ay8b= defmacro(dc, tabla, prefix, Nivel_Total,
+                             expr={
+                               Macro.svyquantile(tabla=t1, by=Persona, clase='01: Provincia', dc=dc, nivel="Persona")
+                               Macro.svyquantile(tabla=t2, by=Provincia, clase='01: Provincia', dc=dc, nivel="Provincia")
+                               
+                               Macro.svyquantile(tabla=t3, by=Persona, clase='01: Ciudad', dc=dc, nivel="Persona")
+                               Macro.svyquantile(tabla=t4, by=Cda, clase='01: Ciudad', dc=dc, nivel="Cda")
+                               
+                               tabla =rbind(t1,t2,t3,t4)
+                               
+                               tabla$cv = NULL
+                               setnames(tabla, "V1", prefix)
+                               setnames(tabla, "cv%", prefix%s+%"_CV_Pct")
+                               
+                               
+                               tabla$Nivel = as(tabla$Nivel,"character")
+                               tabla$Nivel[tabla$Nivel==1] = Nivel_Total
+                               
+                             })
+
+MacroMediana.8ay8b(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla=Md.Ambos.C8ay8b, prefix="Ambos_Md", Nivel_Total="00: Ocupados")
+MacroMediana.8ay8b(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla=Md.Hombres.C8ay8b, prefix="Hombre_Md", Nivel_Total="00: Ocupados")
+MacroMediana.8ay8b(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla=Md.Mujeres.C8ay8b, prefix="Mujer_Md", Nivel_Total="00: Ocupados")
+
+
+####################################
+#  CUADRO 8a y 8b: TOTAL OCUPADOS  #
+####################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 8a y 8b: Ocupados",Hora_Inicio=Sys.time()))
+
+MacroEstimar.8ay8b(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1), tabla=Oc.Ambos.c8ay8b, prefix="Ambos_Oc", Nivel_Total="00: Ocupados")
+MacroEstimar.8ay8b(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==1), tabla=Oc.Hombres.C8ay8b, prefix="Hombre_Oc", Nivel_Total="00: Ocupados")
+MacroEstimar.8ay8b(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & SEXO==2), tabla=Oc.Mujeres.C8ay8b, prefix="Mujer_Oc", Nivel_Total="00: Ocupados")
+
+##################################
+#  CUADRO 8a y 8b : CONSOLIDADO  #
+##################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 8a y 8b: Consolida y Exporta",Hora_Inicio=Sys.time()))
+
+Cuadro_8ay8b = Reduce(merge.data.frame, list(Obs.Ambos.C8ay8b, Obs.Mujeres.C8ay8b, Obs.Hombres.c8ay8b, Me.Ambos.C8ay8b, Me.Mujeres.C8ay8b, Me.Hombres.C8ay8b, Md.Ambos.C8ay8b, Md.Mujeres.C8ay8b, Md.Hombres.C8ay8b, Oc.Ambos.c8ay8b, Oc.Mujeres.C8ay8b, Oc.Hombres.C8ay8b))
+
+rm(Obs.Ambos.C8ay8b, Obs.Mujeres.C8ay8b, Obs.Hombres.c8ay8b, Me.Ambos.C8ay8b, Me.Mujeres.C8ay8b, Me.Hombres.C8ay8b, Md.Ambos.C8ay8b, Md.Mujeres.C8ay8b, Md.Hombres.C8ay8b, Oc.Ambos.c8ay8b, Oc.Mujeres.C8ay8b, Oc.Hombres.C8ay8b)
+
+gc(verbose=FALSE,reset=FALSE)
+
+Cuadro_8ay8b=Cuadro_8ay8b[!Cuadro_8ay8b$Nivel %in% c('00: Menos de 15 años','00: No corresponde','00: Ocupados con cero horas trabajadas'),]
+
+setorder (Cuadro_8ay8b, - Clase, Nivel)
+
+SaveExcel(ruta=Carpeta.Resultados%s+%"Cuadro_8ay8b.xlsx", sheet="CUADRO 8A y 8B", resultado=Cuadro_8ay8b)
+
+
+##################################################################################
+#                         CUADRO 9a y 9b                                         #
+#       INGRESO MEDIO Y MEDIANO MENSUAL DE OCUPADOS DEPENDIENTES POR SEXO        #
+#                   Nivel Provincia y Ciudad                                     #
+###############################################################################3##
+
+
+############################################################################
+#   CUADRO 9a y 9b: NÚMERO DE OBSERVACIONES POR CADA NIVEL DE ESTIMACIÓN   #
+############################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 9a y 9b: Nro. de Observaciones Nivel Provincia y Ciudad",Hora_Inicio=Sys.time()))
+
+Macro.Obs.9ay9b= defmacro(dc, tabla, prefix, Nivel_Total,
+                          expr={
+                            Macro.Obs(tabla=t1, by=Persona, clase='01: Provincia', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t2, by=Provincia, clase='01: Provincia', dc=dc, nivel="Provincia")
+                            
+                            Macro.Obs(tabla=t3, by=Persona, clase='01: Ciudad', dc=dc, nivel="Persona")
+                            Macro.Obs(tabla=t4, by=Cda, clase='01: Ciudad', dc=dc, nivel="Cda")
+                            
+                            tabla=rbind(t1,t2,t3,t4)
+                            
+                            
+                            setnames(tabla, "statistic", prefix)
+                            
+                            
+                            tabla$Nivel = as(tabla$Nivel,"character")
+                            tabla$Nivel[tabla$Nivel==1] = Nivel_Total})                         
+
+Macro.Obs.9ay9b(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla=Obs.Ambos.C9ay9b, prefix="Ambos_Obs", Nivel_Total="00: Ocupados")
+Macro.Obs.9ay9b(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla=Obs.Hombres.c9ay9b, prefix="Hombre_Obs", Nivel_Total="00: Ocupados")
+Macro.Obs.9ay9b(dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla=Obs.Mujeres.C9ay9b, prefix="Mujer_Obs", Nivel_Total="00: Ocupados")
+
+
+###########################
+#  CUADRO 9a y 9b: MEDIA  #
+###########################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 9a y 9b: Media",Hora_Inicio=Sys.time()))
+
+MacroEstimar.9ay9b= defmacro(var, dc, tabla, tx_var, estimacion, prefix, Nivel_Total,
+                             expr={
+                               Macro.svyby(tabla=t1, var=var, estimacion=estimacion, by=Persona, clase='01: Provincia', dc=dc, nivel="Persona")
+                               Macro.svyby(tabla=t2, var=var, estimacion=estimacion, by=Provincia, clase='01: Provincia', dc=dc, nivel="Provincia")
+                               
+                               Macro.svyby(tabla=t3, var=var, estimacion=estimacion, by=Persona, clase='01: Ciudad', dc=dc, nivel="Persona")
+                               Macro.svyby(tabla=t4, var=var, estimacion=estimacion, by=Cda, clase='01: Ciudad', dc=dc, nivel="Cda")
+                               
+                               tabla =rbind(t1,t2,t3,t4)
+                               
+                               setnames(tabla, tx_var, prefix)
+                               setnames(tabla, "cv%", prefix%s+%"_CV_Pct")
+                               
+                               
+                               tabla$Nivel = as(tabla$Nivel,"character")
+                               tabla$Nivel[tabla$Nivel==1] = Nivel_Total})
+
+
+MacroEstimar.9ay9b(var=ING_T_P, tx_var="ING_T_P",estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla=Me.Ambos.C9ay9b, prefix="Ambos_Me", Nivel_Total="00: Ocupados")
+MacroEstimar.9ay9b(var=ING_T_P, tx_var="ING_T_P",estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla=Me.Hombres.C9ay9b, prefix="Hombre_Me", Nivel_Total="00: Ocupados")
+MacroEstimar.9ay9b(var=ING_T_P, tx_var="ING_T_P",estimacion=svymean, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla=Me.Mujeres.C9ay9b, prefix="Mujer_Me", Nivel_Total="00: Ocupados")
+
+
+#############################
+#  CUADRO 9a y 9b: MEDIANA  #
+#############################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 9a y 9b: Mediana",Hora_Inicio=Sys.time()))
+
+Macro.svyquantile = defmacro(tabla, by, clase, dc, nivel,
+                             expr = {tabla = svyby(~ING_T_P, ~by, dc, svyquantile, quantiles=c(0.5), method="constant", interval.type="probability", ties="discrete",
+                                                   vartype=c("ci"), ci=TRUE, keep.var=TRUE, verbose=FALSE, keep.names=TRUE,
+                                                   drop.empty.groups=FALSE, na.rm.by=FALSE, na.rm.all=FALSE)
+                             tabla$Clase=clase
+                             setnames(tabla, nivel, "Nivel")})
+
+MacroMediana.9ay9b= defmacro(dc, tabla, prefix, Nivel_Total,
+                             expr={
+                               Macro.svyquantile(tabla=t1, by=Persona, clase='01: Provincia', dc=dc, nivel="Persona")
+                               Macro.svyquantile(tabla=t2, by=Provincia, clase='01: Provincia', dc=dc, nivel="Provincia")
+                               
+                               Macro.svyquantile(tabla=t3, by=Persona, clase='01: Ciudad', dc=dc, nivel="Persona")
+                               Macro.svyquantile(tabla=t4, by=Cda, clase='01: Ciudad', dc=dc, nivel="Cda")
+                               
+                               tabla =rbind(t1,t2,t3,t4)
+                               
+                               tabla$cv = NULL
+                               setnames(tabla, "V1", prefix)
+                               setnames(tabla, "cv%", prefix%s+%"_CV_Pct")
+                               
+                               
+                               tabla$Nivel = as(tabla$Nivel,"character")
+                               tabla$Nivel[tabla$Nivel==1] = Nivel_Total})
+
+MacroMediana.9ay9b(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla=Md.Ambos.C9ay9b, prefix="Ambos_Md", Nivel_Total="00: Ocupados")
+MacroMediana.9ay9b(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla=Md.Hombres.C9ay9b, prefix="Hombre_Md", Nivel_Total="00: Ocupados")
+MacroMediana.9ay9b(dc=subset(SB2K, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla=Md.Mujeres.C9ay9b, prefix="Mujer_Md", Nivel_Total="00: Ocupados")
+
+
+################################################
+#  CUADRO 9A Y 9B: TOTAL OCUPADOS DEPENDIENTES #
+################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 9a y 9b: Ocupados",Hora_Inicio=Sys.time()))
+
+MacroEstimar.9ay9b(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1), tabla=Oc.Ambos.c9ay9b, prefix="Ambos_Oc", Nivel_Total="00: Ocupados")
+MacroEstimar.9ay9b(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==1), tabla=Oc.Hombres.C9ay9b, prefix="Hombre_Oc", Nivel_Total="00: Ocupados")
+MacroEstimar.9ay9b(var=OCUP_REF, tx_var="OCUP_REF", estimacion=svytotal, dc=subset(Dc.BasePer, CSE_ESPECIFICO %in% 1:7 & OCUP_REF==1 & OcupDependiente==1 & SEXO==2), tabla=Oc.Mujeres.C9ay9b, prefix="Mujer_Oc", Nivel_Total="00: Ocupados")
+
+#################################
+#  CUADRO 9A y 9B: CONSOLIDADO  #
+#################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Cuadro 9a y 9b: Consolida y Exporta",Hora_Inicio=Sys.time()))
+
+Cuadro_9ay9b = Reduce(merge.data.frame, list(Obs.Ambos.C9ay9b, Obs.Mujeres.C9ay9b, Obs.Hombres.c9ay9b, Me.Ambos.C9ay9b, Me.Mujeres.C9ay9b, Me.Hombres.C9ay9b, Md.Ambos.C9ay9b, Md.Mujeres.C9ay9b, Md.Hombres.C9ay9b, Oc.Ambos.c9ay9b, Oc.Mujeres.C9ay9b, Oc.Hombres.C9ay9b))
+
+rm(Obs.Ambos.C9ay9b, Obs.Mujeres.C9ay9b, Obs.Hombres.c9ay9b, Me.Ambos.C9ay9b, Me.Mujeres.C9ay9b, Me.Hombres.C9ay9b, Md.Ambos.C9ay9b, Md.Mujeres.C9ay9b, Md.Hombres.C9ay9b, Oc.Ambos.c9ay9b, Oc.Mujeres.C9ay9b, Oc.Hombres.C9ay9b)
+
+gc(verbose=FALSE,reset=FALSE)
+
+Cuadro_9ay9b=Cuadro_9ay9b[!Cuadro_9ay9b$Nivel %in% c('00: Menos de 15 años','00: No corresponde','00: Ocupados con cero horas trabajadas'),]
+
+setorder (Cuadro_9ay9b, -Clase, Nivel)
+
+SaveExcel(ruta=Carpeta.Resultados%s+%"Cuadro_9ay9b.xlsx", sheet="CUADRO9Ay9B", resultado=Cuadro_9ay9b)
+
+
+#######################################################################
+#                    EXPORTA A EXCEL GENERAL                          #
+#                INCLUYE ESTIMACIONES CON n < mín                     #
+#######################################################################
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Exporta Excel General",Hora_Inicio=Sys.time()))
+
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas.xlsx", sheet="CUADRO 6 Y 7", resultado=Cuadro_06y07)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas.xlsx", sheet="CUADRO 8 Y 9", resultado=Cuadro_08y09)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas.xlsx", sheet="CUADRO 8A Y 8B", resultado=Cuadro_8ay8b)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas.xlsx", sheet="CUADRO 9A Y 9B", resultado=Cuadro_9ay9b)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas.xlsx", sheet="CUADRO 10", resultado=Cuadro_10)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas.xlsx", sheet="CUADRO 11", resultado=Cuadro_11)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas11A.xlsx", sheet="CUADRO 11A", resultado=Cuadro_11A)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas11B.xlsx", sheet="CUADRO 11B", resultado=Cuadro_11B)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas12.xlsx", sheet="CUADRO 12", resultado=Cuadro_12)
+rm(workbook); gc(verbose=FALSE,reset=FALSE)
+
+Tiempo.Proceso = rbind(Tiempo.Proceso,data.frame(Proceso="Finaliza",Hora_Inicio=Sys.time()))
+
+#######################################################################
+#                                                                     #
+#                    CONSOLIDA TIEMPOS DE PROCESO                     #
+#                                                                     #
+#######################################################################
+
+Tiempo.Proceso = slide(Tiempo.Proceso, Var = "Hora_Inicio", slideBy = 1, NewVar = "Hora_Fin", reminder=FALSE)
+
+Tiempo.Proceso = slide(Tiempo.Proceso, Var = "Hora_Inicio", slideBy = nrow(Tiempo.Proceso)-1, NewVar = "Finaliza", reminder=FALSE)
+
+Tiempo.Proceso$TiempoP_H = as.numeric(trunc(difftime(Tiempo.Proceso$Hora_Fin,Tiempo.Proceso$Hora_Inicio,units='hour')))
+Tiempo.Proceso$TiempoP_M = as.numeric(trunc(difftime(Tiempo.Proceso$Hora_Fin,Tiempo.Proceso$Hora_Inicio,units='mins'))) - Tiempo.Proceso$TiempoP_H*60
+Tiempo.Proceso$TiempoP_S = as.numeric(trunc(difftime(Tiempo.Proceso$Hora_Fin,Tiempo.Proceso$Hora_Inicio,units='secs'))) - Tiempo.Proceso$TiempoP_H*3600 - Tiempo.Proceso$TiempoP_M*60
+
+Tiempo.Proceso$Tiempo_Proceso = paste(str_pad(Tiempo.Proceso$TiempoP_H, 2, pad = "0"),str_pad(Tiempo.Proceso$TiempoP_M, 2, pad = "0"),str_pad(Tiempo.Proceso$TiempoP_S, 2, pad = "0"),sep=":")
+
+Tiempo.Proceso$TiempoF_H = as.numeric(trunc(difftime(Tiempo.Proceso$Finaliza,Tiempo.Proceso$Hora_Inicio,units='hour')))
+Tiempo.Proceso$TiempoF_M = as.numeric(trunc(difftime(Tiempo.Proceso$Finaliza,Tiempo.Proceso$Hora_Inicio,units='mins'))) - Tiempo.Proceso$TiempoF_H*60
+Tiempo.Proceso$TiempoF_S = as.numeric(trunc(difftime(Tiempo.Proceso$Finaliza,Tiempo.Proceso$Hora_Inicio,units='secs'))) - Tiempo.Proceso$TiempoF_H*3600 - Tiempo.Proceso$TiempoF_M*60
+
+Tiempo.Proceso$Tiempo_Total = paste(str_pad(Tiempo.Proceso$TiempoF_H, 2, pad = "0"),str_pad(Tiempo.Proceso$TiempoF_M, 2, pad = "0"),str_pad(Tiempo.Proceso$TiempoF_S, 2, pad = "0"),sep=":")
+
+Tiempo.Proceso=Tiempo.Proceso[!Tiempo.Proceso$Proceso %in% c("Finaliza"),!(colnames(Tiempo.Proceso) %in% c("Finaliza","TiempoP_H","TiempoP_M","TiempoP_S","TiempoF_H","TiempoF_M","TiempoF_S"))]
+
+SaveExcel(ruta=Carpeta.Resultados%s+%"Todos los Cuadros de Personas.xlsx", sheet="Tiempo_Proceso", resultado=Tiempo.Proceso)
+
+#################################################################################################
+
+
+
+
+
+
+
+##Calculo Errores (Marin) #######################
+setwd("C:/Users/Amarin/Desktop/CalculoErroresPrincipalesIndicadores")
+library("haven")
+library ("survey")
+library("xlsx")
+library(Hmisc)
+basefulp  <-"C:\\Users\\Amarin\\Desktop\\FFE_PARAENUT\\05082016FactoresENUT2016Calibrados\\05082016FactoresENUT2016Calibrados.sav"
+
+basefulp<-read_spss(basefulp)
+
+#esta incorpora la variable condicion ocupacion sobre la base 05082016FactoresENUT2016Calibrados
+basefulp<-read_dta("C:/Users/Amarin/Desktop/imputacion_f/prueba.dta")
+basefulp<-read_dta("C:/Users/Amarin/Desktop/BBDD/23082016ENUT2016FactCalibrados.dta")
+
+basefulp$Enc_Dia_1[basefulp$Enc_Dia_1 %in% c("Lunes", "Miércoles")] <-c("LUNES", "MIÉRCOLES")
+basefulp$Enc_Dia_2[basefulp$Enc_Dia_2 %in% c("Domingo", "Sábado")] <-c("DOMINGO", "SÁBADO")
+
+#Se filtran cuestionarios logrados estos ya son suficientes, los que no
+#lo son esta clasificados como BO
+lg<-basefulp[basefulp$j3_resultado_v == "L",]
+
+
+#utilizamos solo las vari
+paraest<-lg[,c(1:39,245:253,849:923,930:951)]
+
+part<-names(paraest)[c(51,52,55,56,83,84,79,80,87,88,95,96,99,100,59,60,63,64,67,68,71,72,75,76,91,92)]
+#recodificamos variables de participacio
+paraest[,part][paraest[,part] == 0]<-NA
+paraest[,part][paraest[,part] == 2]<-0
+
+t<- names(paraest)[c(51,52,55,56,83,84,79,80,87,88,95,96,99,100,59,60,63,64,67,68,71,72,75,76,91,92)-2]
+
+#creamos tramo de edad que se usara para publicacion
+paraest[,"tramop"]<- cut2(paraest[,"c14_1_1"], c(25,46,66,120))
+# creamos variable ocupacion-sexo
+
+
+###################DEFINICION DEL DISEÑO#####################################################
+
+#id:cluster
+#strata:los estratos
+dis<-svydesign(id=~enc_manzana, strata=~enc_comuna,weights=~wgt2, data= paraest[complete.cases(paraest$wgt2),], nest = TRUE)
+
+###################### ESTIMACIONES NACIONALES########################################################
+#NACIONAL
+sexo_reg<-NULL
+for(i in 1:length(part)){
+  ti<-svymean(~get(t[i]),  dis,vartype=c("se","ci","cv"), na.rm=TRUE)
+  pa<-svymean(~get(part[i]), dis, vartype=c("se","ci", "cv"), na.rm=TRUE)
+  n <-svytotal(~get(part[i]),dis, na.rm=TRUE)
+  sexo_reg <- rbind(sexo_reg,  t(c(data.frame(ti,pa,n), t[i])))
+}
+write.xlsx(x = sexo_reg, file = "1808estimaciones_errores.xlsx",
+           sheetName = "nacional", row.names = FALSE, append=TRUE)
+
+#SEXO_NACIONAL
+sexo_reg<-NULL
+for(i in 1:length(part)){
+  ti<-svyby(~get(t[i]), ~sexo, dis, svymean, vartype=c("se","ci","cv"), na.rm=TRUE)
+  pa<-svyby(~get(part[i]), ~sexo, dis, svymean, vartype=c("se","ci", "cv"), na.rm=TRUE)
+  n <-svyby(~get(part[i]), ~sexo, dis,  svytotal,  na.rm=TRUE)
+  sexo_reg <- rbind(sexo_reg, merge(merge(data.frame(ti, "variable" = t[i]),data.frame(pa, "vari" = part[i]), by ="sexo"),n, by ="sexo"))
+}
+write.xlsx(x = sexo_reg, file = "1808estimaciones_errores.xlsx",
+           sheetName = "nacional_sexo", row.names = FALSE, append=TRUE)
+
+#TRAMO-NACIONAL
+sexo_reg<-NULL
+for(i in 1:length(part)){
+  ti<-svyby(~get(t[i]), ~tramop, dis, svymean, vartype=c("se","ci","cv"), na.rm=TRUE)
+  pa<-svyby(~get(part[i]), ~ tramop, dis, svymean, vartype=c("se","ci", "cv"), na.rm=TRUE)
+  n <-svyby(~get(part[i]), ~tramop, dis,  svytotal,  na.rm=TRUE)
+  sexo_reg <- rbind(sexo_reg, merge(merge(data.frame(ti, "variable" = t[i]),data.frame(pa, "vari" = part[i]), by ="tramop"),n, by ="tramop"))
+}
+write.xlsx(x = sexo_reg, file = "1808estimaciones_errores.xlsx",
+           sheetName = "nacional_tramo", row.names = FALSE, append=TRUE)
+
+#SEXO-TRAMO-NACIONAL
+sexo_reg<-NULL
+for(i in 1:length(part)){
+  ti<-svyby(~get(t[i]), ~sexo +tramop, dis, svymean, vartype=c("se","ci","cv"), na.rm=TRUE)
+  pa<-svyby(~get(part[i]), ~ sexo+tramop, dis, svymean, vartype=c("se","ci", "cv"), na.rm=TRUE)
+  n <-data.frame(svyby(~get(part[i]), ~sexo+tramop, dis,  svytotal,na.rm=TRUE), "nivel" = row.names(ti))
+  sexo_reg <- rbind(sexo_reg, merge(merge(data.frame(ti, "variable" = t[i],"nivel" = row.names(ti)),
+                                          data.frame(pa, "vari" = part[i], "nivel" = row.names(ti)), by ="nivel"),n, by ="nivel"))
+}
+write.xlsx(x = sexo_reg, file = "1808estimaciones_errores.xlsx",
+           sheetName = "nacional_tramo_sexo", row.names = FALSE, append=TRUE)
+
+
+#condicion ocupacion-NACIONAL
+sexo_reg<-NULL
+for(i in 1:length(part)){
+  ti<-svyby(~get(t[i]), ~c_ocu, dis, svymean, vartype=c("se","ci","cv"), na.rm=TRUE)
+  pa<-svyby(~get(part[i]), ~ c_ocu, dis, svymean, vartype=c("se","ci", "cv"), na.rm=TRUE)
+  n <-svyby(~get(part[i]), ~c_ocu, dis,  svytotal,  na.rm=TRUE)
+  sexo_reg <- rbind(sexo_reg, merge(merge(data.frame(ti, "variable" = t[i]),data.frame(pa, "vari" = part[i]), by ="c_ocu"),n, by ="c_ocu"))
+}
+write.xlsx(x = sexo_reg, file = "1808estimaciones_errores.xlsx",
+           sheetName = "nacional_cocup", row.names = FALSE, append=TRUE)
+
+#sexo-condicion ocupacion-NACIONAL
+sexo_reg<-NULL
+for(i in 1:length(part)){
+  ti<-svyby(~get(t[i]), ~c_ocu+sexo, dis, svymean, vartype=c("se","ci","cv"), na.rm=TRUE)
+  pa<-svyby(~get(part[i]), ~c_ocu+sexo, dis, svymean, vartype=c("se","ci", "cv"), na.rm=TRUE)
+  n <-data.frame(svyby(~get(part[i]), ~c_ocu+sexo, dis,  svytotal,na.rm=TRUE), "nivel" = row.names(ti))
+  sexo_reg <- rbind(sexo_reg, merge(merge(data.frame(ti, "variable" = t[i],"nivel" = row.names(ti)),
+                                          data.frame(pa, "vari" = part[i], "nivel" = row.names(ti)), by ="nivel"),n, by ="nivel"))
+}
+write.xlsx(x = sexo_reg, file = "1808estimaciones_errores.xlsx",
+           sheetName = "nacional_sexo_cocup", row.names = FALSE, append=TRUE)
+
+############################# ESTIMACIONES REGIONALES###############################################################
+#REGION
+sexo_reg<-NULL
+#saco cuidados para 66 o mas de momento porque se cae en fin de semana
+part<-part[-24]
+t<-t[-24]
+for(i in 1:length(part)){
+  ti<-svyby(~get(t[i]), ~region, dis, svymean, vartype=c("se","ci","cv"), na.rm=TRUE)
+  pa<-svyby(~get(part[i]),  ~region, dis, svymean, vartype=c("se","ci", "cv"), na.rm=TRUE)
+  n <-svyby(~get(part[i]), ~region, dis,  svytotal,  na.rm=TRUE)
+  sexo_reg <- rbind(sexo_reg, merge(merge(data.frame(ti, "variable" = t[i]),data.frame(pa, "vari" = part[i]), by ="region"),n, by ="region"))
+}
+#setwd("C:/Users/Amarin/Desktop/CalculoErroresPrincipalesIndicadores")
+#write.table(sexo_reg, file= "errores__region.txt", sep = "\t", dec = "," , col.names = TRUE, row.names=FALSE)
+write.xlsx(x = sexo_reg, file = "1808estimaciones_errores.xlsx",
+           sheetName = "regional", row.names = FALSE,append=TRUE)
+
+#SEXO-REGION
+#debe salir cuidados a personas de 66 en dia de semana por tener dominio vacio
+part<-part[-23]
+t<-t[-23]
+sexo_reg<-NULL
+for(i in 1:length(part)){
+  ti<-svyby(~get(t[i]), ~Sexo_r, dis, svymean, vartype=c("se","ci","cv"), na.rm=TRUE)
+  pa<-svyby(~get(part[i]), ~Sexo_r, dis, svymean, vartype=c("se","ci", "cv"), na.rm=TRUE)
+  n <-svyby(~get(part[i]), ~Sexo_r, dis,  svytotal,  na.rm=TRUE)
+  sexo_reg <- rbind(sexo_reg, merge(merge(data.frame(ti, "variable" = t[i]),data.frame(pa, "vari" = part[i]), by ="Sexo_r"),n, by ="Sexo_r"))
+}
+write.xlsx(x = sexo_reg, file = "1808estimaciones_errores.xlsx",
+           sheetName = "sexo_regional", row.names = FALSE,append=TRUE)
+
+
+#####################################
+svyhist(~get(t[i]), dis, main = t[i],col = "peachpuff")
+svyboxplot(get(part[6])~sexo, dis)
+
+
+#SACAR N de las estimaciones de los promedios
+attach(paraest)
+totalpart<-NULL
+for(i in 1:length(part)){
+  r<-c(as.numeric(sum(paraest[get(part[i]) %in%1, "wgt2"], na.rm = TRUE)))
+  totalpart<-rbind(totalpart,r)}
+
+###########################################################################################################
+
+
+
+
+#saco duplicados
+duplicado<-usot[duplicated(usot[,"idpersona"]),]
+usot[duplicated(usot[,"idpersona"]),"idpersona"] <- c("d2266068312d", 
+                                                      "d1362127212d" ,
+                                                      "d20116141312d", 
+                                                      "4343448215d")
+
+row.names(usot)<-usot[,"idpersona"]
+
+extrac<- grep("T_+", nombres, perl=TRUE, value=TRUE)
+
+tiempo<-function(x){
+  x<-as.vector(x)
+  h<-as.numeric(substr(x,1,2))
+  m<-as.numeric(substr(x,4,6))
+  n<-h+m/60
+  return(n)
+}
+
+
+usot[,extrac]<-apply(usot[,extrac],2,tiempo)
+write.table(usot,"C:/Users/Dcamposp/Documents/INE/R/dcp.txt" ,sep="\t") 
+
+###########################################################################################################3
+
+
+t1<-subset(m,tipo==1)
+clt1<-clo(t1[,2:4])
+summary(clt1)
+t2<-subset(m,tipo==2)
+plot(acomp(clo(t1[,2:4])),col="blue")
+ellipses(mean(rcomp(t1[,2:4])),var(rcomp(t1[,2:4])),r=2,col="blue")
+par(new=T)
+plot(acomp(clo(t2[,2:4])),col="red")
+ellipses(mean(rcomp(t2[,2:4])),var(rcomp(t2[,2:4])),r=2,col="red")
+
+
+andesitas1<-volcanitas[uv==1,]
+andesitas2<-volcanitas[uv==2,]
+andesitas<-rbind(andesitas1,andesitas2)
+dacitas1<-volcanitas[uv==3,]
+dacitas2<-volcanitas[uv==4,]
+dacitas<-rbind(dacitas1,dacitas2)
+riolitas1<-volcanitas[uv==5,]
+riolitas2<-volcanitas[uv==6,]
+riolitas<-rbind(riolitas1,riolitas2)
+
+
+
+## Comparacion Biplot yo y metodo Robusto
+par(mfrow=c(1,2),oma=c(0, 0, 4, 0))
+biplot(T1cp,,cex.axis=1.0,cex=0.8,main=(paste("Biplot T1: Variabilidad Total es",val1[1]+val1[2])), xlab=paste("Cp1 es",val1[1]),ylab=paste("Cp2 es",val1[2]))
+abline(h=0,v=0)
+plot(cpt1)
+title("Analisis de Comp.Prin Metodo robusto")
+###########################################################################################################
+
+
+
+
+
+#################################################################################################
+
+## Exportando Datos
+
+write.table(my.data.frame, file = "mi.output.txt", sep = "",row.names = FALSE ,col.names = TRUE)
+
+#################################################################################################
+
+
+##### GEOREFERENCIACION ################
+install.packages("ggplot2")
+install.packages("ggmap")
+library(ggplot2)
+library(ggmap)
+
+geocode("QUILPUE")
+
+# obtengo un mapa
+install.packages("get_map")
+library(get_map)
+map.unizar <- get_map(location = as.numeric(geocode("QUILPUE"),scale = 2,zoom = 16)
+
+# lo represento
+ggmap("map.unizar")
+
+# le añado puntos
+ggmap(map.unizar) + geom_point(aes(x = lon, y = lat),
+                               data = geocode("the white house"), colour = 'red',size = 4)
+##################################################################
+
+
+install.packages("maps")
+install.packages("mapproj")
+library(maps)
+library(mapproj)
+map() #dibuja un mapa mundial
+map("usa") #dibuja el mapa de EUA
+map("chile") #dibuja el mapa de EUA
+
+help(map)
+
+
+
+colours()
+
+
+map()	#
+map(wrap = c(0,360), fill = TRUE, col ="lightyellow") # pacific-centered map of the world
+map(wrap = c(0, 360, NA), fill = TRUE, col ="lightyellow") # idem, without Antarctica
+map('usa')	# national boundaries
+map('county', 'new jersey')	# county map of New Jersey
+map('state', region = c('new york', 'new jersey', 'penn'))	# map of three states
+map("state", ".*dakota", myborder = 0)	# map of the dakotas
+map.axes()				# show the effect of myborder = 0
+if(require(mapproj))
+  map('state', proj = 'bonne', param = 45)	# Bonne equal-area projection of states
+
+# names of the San Juan islands in Washington state
+map('county', 'washington,san', names = TRUE, plot = FALSE)
+
+# national boundaries in one linetype, states in another
+# (figure 5 in the reference)
+map("state", interior = FALSE)
+map("state", boundary = FALSE, lty = 2, add = TRUE)
+
+# plot the ozone data on a base map
+# (figure 4 in the reference)
+data(ozone)
+map("state", xlim = range(ozone$x), ylim = range(ozone$y))
+text(ozone$x, ozone$y, ozone$median)
+box()
+if(require(mapproj)) {	# mapproj is used for  projection="polyconic"
+  # color US county map by 2009 unemployment rate
+  # match counties to map using FIPS county codes
+  # Based on J's solution to the "Choropleth Challenge"
+  # http://blog.revolutionanalytics.com/2009/11/choropleth-challenge-result.html
+  
+  # load data
+  # unemp includes data for some counties not on the "lower 48 states" county
+  # map, such as those in Alaska, Hawaii, Puerto Rico, and some tiny Virginia
+  #  cities
+  data(unemp)
+  data(county.fips)
+  
+  # define color buckets
+  colors = c("#F1EEF6", "#D4B9DA", "#C994C7", "#DF65B0", "#DD1C77", "#980043")
+  unemp$colorBuckets <- as.numeric(cut(unemp$unemp, c(0, 2, 4, 6, 8, 10, 100)))
+  leg.txt <- c("<2%", "2-4%", "4-6%", "6-8%", "8-10%", ">10%")
+  
+  # align data with map definitions by (partial) matching state,county
+  # names, which include multiple polygons for some counties
+  cnty.fips <- county.fips$fips[match(map("county", plot=FALSE)$names,county.fips$polyname)]
+  colorsmatched <- unemp$colorBuckets [match(cnty.fips, unemp$fips)]
+  
+  # draw map
+  map("county", col = colors[colorsmatched], fill = TRUE, resolution = 0,lty = 0, projection = "polyconic")
+  map("state", col = "white", fill = FALSE, add = TRUE, lty = 1, lwd = 0.2,projection="polyconic")
+  title("Empleo por zona, 2009")
+  legend("topright", leg.txt, horiz = TRUE, fill = colors)
+  
+}
+
+
+
+
+## Componentes Principales en R
+
+aire.dat <- read.table("E:\\datos.txt",header=T)
+dimnames(aire.dat)[[1]] <- c("Phoenix", "Little Rock", "San Francisco",
+                             "Denver", "Hartford", "Wilmington", "Washington", "Jacksonville", "Miami",
+                             "Atlanta", "Chicago", "Indianapolis", "Des Moines", "Wichita", "Louisville",
+                             "New Orleans", "Baltimore", "Detroit", "Minneapolis-St. Paul", "Kansas City",
+                             "St. Louis", "Omaha", "Alburquerque", "Albany", "Buffalo", "Cincinnati",
+                             "Cleveland", "Columbus", "Philadelphia", "Pittsburgh", "Providence",
+                             "Memphis", "Nashville", "Dallas", "Houston", "Salt Lake City", "Norfolk",
+                             "Richmond", "Seattle", "Charleston", "Milwaukee")
+
+# Calculo los componentes principales basados en la matriz de correlaciones
+aire.pc<-princomp(aire.dat,cor=TRUE)
+summary(aire.pc,loadings=TRUE)
+
+aire.pc$scores
+
+# Es lo mismo que calcular los autovalores y autovectores de S
+S = cor(aire.dat)
+eigen(S)
+
+# Las puntuaciones se obtienen mediante la orden
+aire.pc$scores[,1:3]
+
+par(pty="s", bg="lightyellow")
+plot(aire.pc$scores[,1],aire.pc$scores[,2], main="Componentes Principal 1 \n v/s \n Componentes Principal 2",                                                              
+     ylim=range(aire.pc$scores[,1]),
+     xlab="Componente Principal 1",ylab="Componente Principal 2",type="n",lwd=2)
+text(aire.pc$scores[,1],aire.pc$scores[,2],
+     labels=abbreviate(row.names(aire.dat)),cex=0.7,lwd=2)
+abline(h=0,v=0)
+
+par(pty="s", bg="lightyellow")
+plot(aire.pc$scores[,1],aire.pc$scores[,3], main="Componentes Principal 1 \n v/s \n Componentes Principal 3",
+     ylim=range(aire.pc$scores[,1]),
+     xlab="Componente Principal 1",ylab="Componente Principal 3",type="n",lwd=2)
+text(aire.pc$scores[,1],aire.pc$scores[,3],
+     labels=abbreviate(row.names(aire.dat)),cex=0.7,lwd=2)
+abline(h=0,v=0)
+
+
+par(pty="s", bg="lightyellow")
+plot(aire.pc$scores[,2],aire.pc$scores[,3], main="Componentes Principal 2 \n v/s \n Componentes Principal 3",
+     ylim=range(aire.pc$scores[,2]),
+     xlab="Componente Principal 2",ylab="Componente Principal 3",type="n",lwd=2)
+text(aire.pc$scores[,2],aire.pc$scores[,3],
+     labels=abbreviate(row.names(aire.dat)),cex=0.7,lwd=2)
+abline(h=0,v=0)
+
+
+
+
+
